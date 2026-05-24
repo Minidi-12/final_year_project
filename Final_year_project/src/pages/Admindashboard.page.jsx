@@ -67,6 +67,7 @@ import {
   useDeleteGnOfficerMutation,
   useGetAllvolunteersQuery,
   useDeletevolunteerMutation,
+  useDeleteb_reqMutation,
 } from "@/lib/api";
 import { putImage } from "@/lib/b_req";
 import Preloader from "../components/Preloader";
@@ -136,7 +137,6 @@ function DecisionBtn({ icon: Icon, label, color, onClick }) {
   );
 }
 
-
 function StatusBadge({ status }) {
   const c = STATUS_META[status] || STATUS_META.pending;
   return (
@@ -148,7 +148,6 @@ function StatusBadge({ status }) {
     </span>
   );
 }
-
 
 function ChartCard({ title, sub, children, action }) {
   return (
@@ -164,7 +163,6 @@ function ChartCard({ title, sub, children, action }) {
     </div>
   );
 }
-
 
 function StatCard({ label, val, detail, icon: Icon, color, bg, delay = 0 }) {
   return (
@@ -188,7 +186,6 @@ function StatCard({ label, val, detail, icon: Icon, color, bg, delay = 0 }) {
   );
 }
 
-
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
@@ -202,16 +199,28 @@ export default function AdminDashboard() {
     .toUpperCase()
     .slice(0, 2);
 
-  
   const { data: allRequests = [], isLoading, refetch } = useGetAllb_reqsQuery();
   const { data: gnOfficers = [] } = useGetAllGnOfficersQuery();
   const { data: gnDivisions = [] } = useGetAllgn_divisionsQuery();
   const { data: volunteers = [] } = useGetAllvolunteersQuery();
   const [updateb_req, { isLoading: isUpdating }] = useUpdateb_reqMutation();
+  const [deleteRequest, { isLoading: isDeleting }] = useDeleteb_reqMutation();
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
+  };
+
+  const handleDeleteRequest = async () => {
+    if (!confirmDeleteId) return;
+    try {
+      await deleteRequest(confirmDeleteId).unwrap();
+      setConfirmDeleteId(null);
+      refetch();
+    } catch (err) {
+      alert("Delete failed: " + (err.data?.message || err.message));
+    }
   };
 
   const NAV = [
@@ -220,7 +229,6 @@ export default function AdminDashboard() {
     { id: "projects", icon: Briefcase, label: "Projects" },
     { id: "officers", icon: ShieldCheck, label: "GN Network" },
     { id: "volunteers", icon: UserPlus, label: "Volunteers" },
-
   ];
 
   const renderContent = () => {
@@ -244,6 +252,10 @@ export default function AdminDashboard() {
               setActiveTab("detail");
             }}
             onUpdate={updateb_req}
+            confirmDeleteId={confirmDeleteId}
+            setConfirmDeleteId={setConfirmDeleteId}
+            onDelete={handleDeleteRequest}
+            isDeleting={isDeleting}
           />
         );
       case "detail":
@@ -279,7 +291,6 @@ export default function AdminDashboard() {
     <>
       <AnimatePresence>{isLoading && <Preloader />}</AnimatePresence>
       <div className="min-h-screen bg-[#F8FAFB] flex font-sans">
-        
         <aside className="w-64 bg-white border-r border-slate-100 flex flex-col hidden lg:flex sticky top-0 h-screen">
           <div className="p-6 flex items-center gap-3 border-b border-slate-100">
             <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center">
@@ -333,9 +344,7 @@ export default function AdminDashboard() {
           </div>
         </aside>
 
-        
         <main className="flex-1 overflow-y-auto">
-          
           <header className="h-16 bg-white/80 backdrop-blur-sm border-b border-slate-100 px-8 flex items-center justify-between sticky top-0 z-30">
             <h1 className="text-lg font-bold text-slate-900 capitalize">
               {activeTab === "queue"
@@ -385,9 +394,7 @@ export default function AdminDashboard() {
   );
 }
 
-
 function OverviewView({ allRequests, gnDivisions, isLoading }) {
-  
   const stats = useMemo(() => {
     const now = new Date();
     const thisMonth = allRequests.filter((r) => {
@@ -411,7 +418,6 @@ function OverviewView({ allRequests, gnDivisions, isLoading }) {
     };
   }, [allRequests]);
 
-  
   const monthlyTrend = useMemo(() => {
     const months = [
       "Jan",
@@ -437,7 +443,6 @@ function OverviewView({ allRequests, gnDivisions, isLoading }) {
       .map((m) => ({ name: m, count: counts[m] || 0 }));
   }, [allRequests]);
 
-  
   const divisionData = useMemo(() => {
     const map = {};
     allRequests.forEach((r) => {
@@ -450,7 +455,6 @@ function OverviewView({ allRequests, gnDivisions, isLoading }) {
     return Object.values(map);
   }, [allRequests]);
 
-  
   const supportData = useMemo(() => {
     const map = {};
     allRequests.forEach((r) => {
@@ -464,7 +468,6 @@ function OverviewView({ allRequests, gnDivisions, isLoading }) {
     }));
   }, [allRequests]);
 
-  
   const urgencyData = useMemo(
     () => [
       {
@@ -501,7 +504,6 @@ function OverviewView({ allRequests, gnDivisions, isLoading }) {
 
   return (
     <div className="space-y-8">
-     
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Total Requests"
@@ -540,7 +542,7 @@ function OverviewView({ allRequests, gnDivisions, isLoading }) {
           delay={0.15}
         />
       </div>
-      
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Resolved"
@@ -580,9 +582,7 @@ function OverviewView({ allRequests, gnDivisions, isLoading }) {
         />
       </div>
 
-     
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-       
         <ChartCard
           title="Submission Trends"
           sub="Monthly intake volume from real data"
@@ -630,7 +630,6 @@ function OverviewView({ allRequests, gnDivisions, isLoading }) {
           </ResponsiveContainer>
         </ChartCard>
 
-        
         <ChartCard
           title="Requests by GN Division"
           sub="Total requests vs verified cases per division"
@@ -679,7 +678,6 @@ function OverviewView({ allRequests, gnDivisions, isLoading }) {
           </ResponsiveContainer>
         </ChartCard>
 
-       
         <ChartCard
           title="Support Type Distribution"
           sub="Breakdown of requested aid categories"
@@ -726,7 +724,6 @@ function OverviewView({ allRequests, gnDivisions, isLoading }) {
           </div>
         </ChartCard>
 
-      
         <ChartCard
           title="Urgency Distribution"
           sub="ML-assessed case severity breakdown"
@@ -767,7 +764,7 @@ function OverviewView({ allRequests, gnDivisions, isLoading }) {
           </div>
         </ChartCard>
       </div>
-      
+
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-5 border-b border-slate-100 flex items-center justify-between">
           <div>
@@ -802,6 +799,10 @@ function QueueView({
   isLoading,
   onSelect,
   onUpdate,
+  confirmDeleteId,
+  setConfirmDeleteId,
+  onDelete,
+  isDeleting,
 }) {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterUrgency, setFilterUrgency] = useState("all");
@@ -832,15 +833,12 @@ function QueueView({
         return matchSearch && matchStatus && matchUrgency && matchDivision;
       })
       .sort((a, b) => {
-        
         const aIsProcessed = a.status === "verified" || a.status === "rejected";
         const bIsProcessed = b.status === "verified" || b.status === "rejected";
 
-        
         if (aIsProcessed && !bIsProcessed) return 1;
         if (!aIsProcessed && bIsProcessed) return -1;
 
-        
         return sortBy === "score"
           ? (b.urgency_score ?? 0) - (a.urgency_score ?? 0)
           : (a.b_profile?.[0]?.name || "").localeCompare(
@@ -858,7 +856,6 @@ function QueueView({
 
   return (
     <div className="space-y-6">
-     
       <div className="bg-white rounded-2xl border border-slate-100 p-5 flex flex-wrap gap-4 items-center">
         <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wide">
           <Filter className="w-4 h-4" /> Filters
@@ -909,7 +906,6 @@ function QueueView({
         </span>
       </div>
 
-    
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -1018,12 +1014,21 @@ function QueueView({
                         <StatusBadge status={req.status} />
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => onSelect(req._id)}
-                          className="px-4 py-2 bg-slate-900 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all active:scale-95 flex items-center gap-1.5 ml-auto"
-                        >
-                          <Eye className="w-3.5 h-3.5" /> Review
-                        </button>
+                        <div className="flex gap-2 justify-end">
+                          <button
+                            onClick={() => onSelect(req._id)}
+                            className="px-4 py-2 bg-slate-900 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all active:scale-95 flex items-center gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5" /> Review
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(req._id)}
+                            className="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-all active:scale-95 border border-red-200"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -1033,10 +1038,81 @@ function QueueView({
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {confirmDeleteId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={(e) =>
+              e.target === e.currentTarget &&
+              !isDeleting &&
+              setConfirmDeleteId(null)
+            }
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 10 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center"
+            >
+              <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-red-100">
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-900 mb-1">
+                Delete Request
+              </h3>
+              <p className="text-sm text-slate-500 mb-3">
+                Are you sure you want to delete this beneficiary request?
+              </p>
+
+              <div className="p-3 bg-red-50 rounded-xl border border-red-100 mb-6">
+                <p className="text-xs text-red-700 font-medium leading-relaxed">
+                  This action is permanent and cannot be undone. All data
+                  associated with this request will be deleted from the
+                  database.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setConfirmDeleteId(null)}
+                  disabled={isDeleting}
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  disabled={isDeleting}
+                  className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-red-200"
+                >
+                  {isDeleting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Deleting…
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" /> Yes, Delete
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-
 
 function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
   const req = allRequests.find((r) => r._id === id);
@@ -1094,7 +1170,6 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
 
   return (
     <div className="space-y-6">
-     
       <div className="flex items-center gap-4">
         <button
           onClick={onBack}
@@ -1112,9 +1187,7 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-       
         <div className="lg:col-span-8 space-y-5">
-          
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <User className="w-4 h-4 text-emerald-600" />
@@ -1132,7 +1205,7 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
             ])}
           </div>
 
-         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <DollarSign className="w-4 h-4 text-emerald-600" />
               <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
@@ -1154,7 +1227,6 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
             ])}
           </div>
 
-         
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <Activity className="w-4 h-4 text-emerald-600" />
@@ -1183,7 +1255,6 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
             ])}
           </div>
 
-        
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <MapPin className="w-4 h-4 text-emerald-600" />
@@ -1212,7 +1283,6 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
             </div>
           </div>
 
-         
           <div className="bg-slate-900 rounded-2xl p-6 text-white">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
               Beneficiary Statement
@@ -1222,52 +1292,112 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
             </p>
           </div>
 
-         
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide mb-4 flex items-center gap-2">
               <FileText className="w-4 h-4 text-emerald-600" />
               Evidence Documents
             </h3>
-            {req.req_evidence && req.req_evidence.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {req.req_evidence.map((file, i) => {
-                  const fileUrl = typeof file === 'string' ? file : file.fileUrl || file;
-                  const fileName = typeof file === 'string' ? `Evidence ${i + 1}` : (file.file_name || file.fileName || `Document ${i + 1}`);
-                  return (
-                    <a
-                      key={i}
-                      href={fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all group cursor-pointer"
-                    >
-                      <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-emerald-600 transition-colors">
-                        {fileUrl.toLowerCase().includes('.pdf') ? (
-                          <FileText className="w-4 h-4 text-emerald-600 group-hover:text-white" />
-                        ) : (
-                          <FileText className="w-4 h-4 text-emerald-600 group-hover:text-white" />
-                        )}
-                      </div>
-                      <span className="text-xs font-semibold text-slate-700 truncate flex-1">
-                        {fileName.split('/').pop()}
-                      </span>
-                      <Eye className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 shrink-0 transition-colors" />
-                    </a>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-6 text-slate-400">
-                <FileText className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No evidence documents uploaded</p>
-              </div>
-            )}
+            {(() => {
+              // Robust URL extractor — handles plain strings, {url}, {fileUrl},
+              // {file_url}, {path}, {key} shapes coming from R2 storage
+              const getFileUrl = (file) => {
+                if (!file) return null;
+                if (typeof file === "string") return file;
+                return (
+                  file.url ||
+                  file.fileUrl ||
+                  file.file_url ||
+                  file.path ||
+                  file.key ||
+                  null
+                );
+              };
+              const getFileName = (file, i) => {
+                if (!file) return `Document ${i + 1}`;
+                if (typeof file === "string")
+                  return file.split("/").pop() || `Evidence ${i + 1}`;
+                return (
+                  file.file_name ||
+                  file.fileName ||
+                  file.name ||
+                  file.original_name ||
+                  (getFileUrl(file) || "").split("/").pop() ||
+                  `Document ${i + 1}`
+                );
+              };
+              const isPdf = (url = "") =>
+                url.toLowerCase().includes(".pdf") ||
+                url.toLowerCase().includes("pdf");
+              const isImage = (url = "") =>
+                /\.(jpe?g|png|gif|webp|bmp|svg)(\?|$)/i.test(url);
+
+              const docs =
+                req.req_evidence ||
+                req.evidence_documents ||
+                req.documents ||
+                [];
+              if (!docs.length)
+                return (
+                  <div className="text-center py-6 text-slate-400">
+                    <FileText className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">No evidence documents uploaded</p>
+                  </div>
+                );
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {docs.map((file, i) => {
+                    const fileUrl = getFileUrl(file);
+                    const fileName = getFileName(file, i);
+                    if (!fileUrl) return null;
+                    return (
+                      <a
+                        key={i}
+                        href={fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all group cursor-pointer"
+                      >
+                        <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-emerald-600 transition-colors overflow-hidden">
+                          {isImage(fileUrl) ? (
+                            <img
+                              src={fileUrl}
+                              alt=""
+                              className="w-full h-full object-cover rounded-lg"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                                e.target.nextSibling &&
+                                  (e.target.nextSibling.style.display = "flex");
+                              }}
+                            />
+                          ) : null}
+                          <FileText
+                            className={`w-4 h-4 text-emerald-600 group-hover:text-white ${isImage(fileUrl) ? "hidden" : ""}`}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-slate-700 truncate">
+                            {fileName}
+                          </p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">
+                            {isPdf(fileUrl)
+                              ? "PDF Document"
+                              : isImage(fileUrl)
+                                ? "Image File"
+                                : "Document"}
+                          </p>
+                        </div>
+                        <Eye className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 shrink-0 transition-colors" />
+                      </a>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         </div>
 
-       
         <div className="lg:col-span-4 space-y-4">
-         
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">
               Urgency Score
@@ -1313,7 +1443,6 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
             )}
           </div>
 
-         
           {req.Predictions?.length > 0 && (
             <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">
@@ -1352,7 +1481,6 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
             </div>
           )}
 
-        
           {isActionable && !actionDone ? (
             <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
               <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
@@ -1412,7 +1540,6 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
             </div>
           )}
 
-          
           <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">
               Contact
@@ -1429,7 +1556,6 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
     </div>
   );
 }
-
 
 function ProjectsView() {
   const { data: projects = [], isLoading, refetch } = useGetAllprojectsQuery();
@@ -1475,7 +1601,6 @@ function ProjectsView() {
     if (form.description.trim().length < 10)
       return setFormError("Description must be at least 10 characters.");
 
-    
     const statusMap = {
       active: "active",
       Active: "active",
@@ -1526,7 +1651,6 @@ function ProjectsView() {
     return "bg-amber-50 text-amber-700 border-amber-200";
   };
 
- 
   const displayProjects =
     projects.length > 0
       ? projects
@@ -1559,7 +1683,6 @@ function ProjectsView() {
 
   return (
     <div className="space-y-6">
-     
       <AnimatePresence>
         {successMsg && (
           <motion.div
@@ -1574,7 +1697,6 @@ function ProjectsView() {
         )}
       </AnimatePresence>
 
-      
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">
@@ -1595,7 +1717,6 @@ function ProjectsView() {
         </button>
       </div>
 
-    
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
@@ -1686,7 +1807,6 @@ function ProjectsView() {
         </div>
       )}
 
-      
       <AnimatePresence>
         {selectedProj && (
           <motion.div
@@ -1704,7 +1824,6 @@ function ProjectsView() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
             >
-             
               <div className="p-6 border-b border-slate-100 flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
@@ -1736,7 +1855,6 @@ function ProjectsView() {
               </div>
 
               <div className="p-6 space-y-5">
-              
                 {(() => {
                   const pct =
                     selectedProj.budget > 0
@@ -1775,7 +1893,6 @@ function ProjectsView() {
                   );
                 })()}
 
-              
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     [
@@ -1810,7 +1927,6 @@ function ProjectsView() {
                   ))}
                 </div>
 
-               
                 {selectedProj.description && (
                   <div>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">
@@ -1823,7 +1939,6 @@ function ProjectsView() {
                 )}
               </div>
 
-            
               <div className="p-6 border-t border-slate-100">
                 {deleteConfirm ? (
                   <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
@@ -1878,7 +1993,6 @@ function ProjectsView() {
         )}
       </AnimatePresence>
 
-     
       <AnimatePresence>
         {showForm && (
           <motion.div
@@ -1911,7 +2025,6 @@ function ProjectsView() {
                 </button>
               </div>
 
-            
               <AnimatePresence>
                 {formError && (
                   <motion.div
@@ -2086,10 +2199,9 @@ function ProjectsView() {
   );
 }
 
-
 function OfficersView({ gnOfficers, gnDivisions }) {
   const [showModal, setShowModal] = useState(false);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null); 
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const { data: allDivisions = [] } = useGetAllgn_divisionsQuery();
   const [createGnOfficer, { isLoading: isCreating }] =
     useCreateGnOfficerMutation();
@@ -2106,7 +2218,6 @@ function OfficersView({ gnOfficers, gnDivisions }) {
   const [proofFile, setProofFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  
   const officerToDelete = gnOfficers.find(
     (o) => (o._id || o.id) === confirmDeleteId,
   );
@@ -2114,7 +2225,6 @@ function OfficersView({ gnOfficers, gnDivisions }) {
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      
       const allowedTypes = [
         "application/pdf",
         "image/jpeg",
@@ -2125,7 +2235,7 @@ function OfficersView({ gnOfficers, gnDivisions }) {
         alert("Please upload a PDF, JPG, or PNG file");
         return;
       }
-     
+
       if (file.size > 5 * 1024 * 1024) {
         alert("File size must be less than 5MB");
         return;
@@ -2146,10 +2256,8 @@ function OfficersView({ gnOfficers, gnDivisions }) {
       return;
     }
     try {
-    
       const proofFileUrl = await putImage({ file: proofFile });
 
-      
       const submissionData = {
         ...form,
         proofFileUrl,
@@ -2183,7 +2291,6 @@ function OfficersView({ gnOfficers, gnDivisions }) {
 
   return (
     <div className="space-y-6">
-     
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-slate-900">
@@ -2202,7 +2309,6 @@ function OfficersView({ gnOfficers, gnDivisions }) {
         </button>
       </div>
 
-     
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {gnOfficers.length === 0 ? (
           <div className="col-span-3 text-center py-16 text-slate-400">
@@ -2224,7 +2330,6 @@ function OfficersView({ gnOfficers, gnDivisions }) {
               transition={{ delay: i * 0.05 }}
               className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all group relative"
             >
-              
               <button
                 onClick={() => setConfirmDeleteId(officer._id || officer.id)}
                 title="Remove officer"
@@ -2275,7 +2380,6 @@ function OfficersView({ gnOfficers, gnDivisions }) {
         )}
       </div>
 
-      
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
         <h3 className="text-base font-bold text-slate-900 mb-4">
           GN Divisions
@@ -2297,7 +2401,6 @@ function OfficersView({ gnOfficers, gnDivisions }) {
         </div>
       </div>
 
-     
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -2454,7 +2557,6 @@ function OfficersView({ gnOfficers, gnDivisions }) {
         )}
       </AnimatePresence>
 
-      
       <AnimatePresence>
         {confirmDeleteId && (
           <motion.div
@@ -2475,7 +2577,6 @@ function OfficersView({ gnOfficers, gnDivisions }) {
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center"
             >
-            
               <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-red-100">
                 <AlertTriangle className="w-8 h-8 text-red-500" />
               </div>
@@ -2537,7 +2638,6 @@ function OfficersView({ gnOfficers, gnDivisions }) {
   );
 }
 
-
 function VolunteersView({ volunteers }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterSkill, setFilterSkill] = useState("all");
@@ -2584,7 +2684,6 @@ function VolunteersView({ volunteers }) {
 
   return (
     <div className="space-y-6">
-     
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">
@@ -2596,7 +2695,6 @@ function VolunteersView({ volunteers }) {
         </div>
       </div>
 
-     
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -2625,7 +2723,6 @@ function VolunteersView({ volunteers }) {
         </div>
       </div>
 
-     
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredVolunteers.length === 0 ? (
           <div className="col-span-full text-center py-16 bg-white rounded-2xl border border-slate-100">
@@ -2653,7 +2750,6 @@ function VolunteersView({ volunteers }) {
                 exit={{ opacity: 0, scale: 0.9 }}
                 className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg transition-all group relative"
               >
-               
                 <button
                   onClick={() => setConfirmDeleteId(volunteer._id)}
                   className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg
@@ -2664,7 +2760,6 @@ function VolunteersView({ volunteers }) {
                   <Trash2 className="w-4 h-4" />
                 </button>
 
-              
                 <div className="flex items-start gap-4 pb-5 border-b border-slate-100 mb-5">
                   <div className="w-14 h-14 bg-gradient-to-br from-indigo-100 to-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-200 shadow-inner">
                     <span className="text-lg font-black text-indigo-700">
@@ -2682,7 +2777,6 @@ function VolunteersView({ volunteers }) {
                   </div>
                 </div>
 
-               
                 <div className="space-y-3 mb-5">
                   <div className="flex items-center gap-2 text-xs text-slate-600">
                     <Phone className="w-3.5 h-3.5 text-emerald-500" />
@@ -2702,7 +2796,6 @@ function VolunteersView({ volunteers }) {
                   </div>
                 </div>
 
-              
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2">
                     Skills
@@ -2724,7 +2817,6 @@ function VolunteersView({ volunteers }) {
                   </div>
                 </div>
 
-                
                 {volunteer.message && (
                   <div className="mt-4 pt-4 border-t border-slate-100">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">
@@ -2741,7 +2833,6 @@ function VolunteersView({ volunteers }) {
         )}
       </div>
 
-     
       <AnimatePresence>
         {confirmDeleteId && (
           <motion.div
@@ -2821,7 +2912,6 @@ function VolunteersView({ volunteers }) {
     </div>
   );
 }
-
 
 const DISTRICT_DATA = [
   {
@@ -3076,13 +3166,11 @@ const DISTRICT_DATA = [
   },
 ];
 
-
 function DistrictLeafletMap({ height = 480 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
 
   useEffect(() => {
-   
     if (!document.getElementById("leaflet-css")) {
       const link = document.createElement("link");
       link.id = "leaflet-css";
@@ -3189,4 +3277,3 @@ function DistrictLeafletMap({ height = 480 }) {
     </div>
   );
 }
-

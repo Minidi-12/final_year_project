@@ -6,9 +6,9 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   const nav = [
-    { label: "About Us",          to: "/about" },
-    { label: "Our Work",          to: "/our-work" },
-    { label: "Reports",           to: "/reports" },
+    { label: "About Us",          to: "/about-us" },
+    { label: "Our Work",          to: "/projects" },
+    { label: "Reports",           to: "/reports-and-researches" },
     { label: "Donate",            to: "/donate" },
     { label: "Contact",           to: "/contact-us" },
   ];

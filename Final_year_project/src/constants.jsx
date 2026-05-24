@@ -44,7 +44,6 @@ export const PROJECTS = [
     longDescription:
       "PEaCE is spearheading the CCSEA project, a nationwide initiative targeting all 25 districts of Sri Lanka to combat child sexual exploitation and abuse through a powerful combination of community mobilisation, education, technology, and multi-agency collaboration.\n\nCSEA thrives in silence. Our response is to dismantle that silence at every level of society - from the classroom to the courtroom, from the family home to the national policy framework.\n\nFour Program Pillars:\n1. Community Surveillance Networks - training trusted community volunteers and leaders in 25 districts to identify, report, and respond to CSEA through structured rapid-response protocols.\n2. Child Empowerment Workshops - age-appropriate safety education delivered to 50,000+ school-going children, giving them the language and confidence to recognise abuse and seek help.\n3. Faith and Community Leader Training - mobilising religious leaders, elders, and community influencers as child protection advocates within their own communities.\n4. Case Management Hotline - a 24/7 child protection support line linking survivors and families directly with case managers, legal advisors, and emergency responders.\n\nProtecting children is not the job of any single institution - it is the shared responsibility of every community in Sri Lanka. Together, we can build a country where every child is safe.",
   },
-
   {
     id: "rural-education",
     title: "Rural Education Support Program",
@@ -75,7 +74,6 @@ export const PROJECT_EXTRAS_MAP = Object.fromEntries(
   ])
 );
 
-
 export const CATEGORY_IMAGES = {
   health:                "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=800&auto=format&fit=crop",
   education:             "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=800&auto=format&fit=crop",
@@ -86,53 +84,8 @@ export const CATEGORY_IMAGES = {
   other:                 "https://images.unsplash.com/photo-1560252829-804f1aedf1be?q=80&w=800&auto=format&fit=crop",
 };
 
-export const ACTIVITIES = [
-  {
-    id: "symposium-2024",
-    title: "First Global Academic Symposium on Monitoring & Evaluation Education - 2024",
-    date: "October 2024",
-    location: "Global",
-    description: "Our Monitoring and Evaluation Officer (MEAL), Pradeep participated at the first-ever global Academic Symposium on Monitoring & Evaluation Education, which brought together experts from across the world to discuss innovative strategies for measuring social impact and ensuring transparency in humanitarian projects.",
-    shortDescription: "Global experts gathered to share innovative strategies for measuring social impact and improving project transparency.",
-    image: "https://media.istockphoto.com/id/2258642801/photo/sri-lankan-school-children-using-a-laptop-in-classroom.jpg?s=612x612&w=0&k=20&c=uYG9OLy0BIK1Z6Run4FkhGxCM-PmhDtLsj130VXwUvk="
-  },
-  {
-    id: "childrens-day-2024",
-    title: "Universal Children's Day 2024 Celebrations",
-    date: "November 20, 2024",
-    location: "Island-wide",
-    description: "To mark Universal Children's Day, which took place on 20th November 2024, PEaCE (Protecting Environment and Children Everywhere) partnered with local community leaders to host a series of festivals and educational workshops celebrating children's rights and fostering a safe environment for every child.",
-    shortDescription: "Island-wide festivals and workshops celebrating children's rights and promoting safety for every child in Sri Lanka.",
-    image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=800&auto=format&fit=crop"
-  },
-  {
-    id: "nysc-maharagama",
-    title: "Awareness Programme for NYSC Youth in Maharagama",
-    date: "October 2024",
-    location: "Maharagama",
-    description: "An awareness programme in the ongoing series aimed at educating youth about child sexual exploitation and abuse was held on the Maharagama NYSC premises. The event combined interactive group activities with expert lectures to empower young individuals to be proactive in community safety.",
-    shortDescription: "Interactive workshops in Maharagama educating youth on preventing sexual exploitation and abuse within communities.",
-    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop"
-  },
-  {
-    id: "puppet-show-keells",
-    title: "A Special Puppet Show Organised by John Keells Foundation, in collaboration with PEaCE",
-    date: "September 2024",
-    location: "Multiple Locations",
-    description: "On 26th September 2024, a special puppet show aimed to educate a gathering of school students from a number of schools in rural areas. This creative medium was highly effective in conveying sensitive messages about personal safety and hygiene to younger children in an engaging way.",
-    shortDescription: "Creative puppet shows educating rural students on personal safety and hygiene through engaging storytelling.",
-    image: "https://images.unsplash.com/photo-1605980045919-4abfbb1c3260?w=600&auto=format&fit=crop"
-  },
-  {
-    id: "elipitiya-awareness",
-    title: "Awareness Programmes for Students and Parents in Elpitiya",
-    date: "August 2024",
-    location: "Elpitiya",
-    description: "As part of the ongoing FVF-funded programme to raise awareness on Prevention of Child Sexual Exploitation and Abuse, an awareness session was conducted in Elpitiya. The direct engagement with parents proved crucial in establishing a collaborative network for child protection at the local household level.",
-    shortDescription: "Collaborative sessions in Elpitiya engaging parents and students in building local child protection networks.",
-    image: "https://images.unsplash.com/photo-1720944519195-76650ee46844?w=600&auto=format&fit=crop"
-  }
-];
+// ACTIVITIES removed — now fetched live from /api/news_posts
+// filtered by post_type === "activity" in Activities_page.jsx
 
 export const REPORTS = [
   {

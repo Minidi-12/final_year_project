@@ -516,52 +516,109 @@ export default function GNDashboard() {
                 </div>
 
                 <div className="p-6 space-y-4">
-                  {selectedEvidence.req_evidence &&
-                  selectedEvidence.req_evidence.length > 0 ? (
-                    selectedEvidence.req_evidence.map((file, idx) => (
-                      <a
-                        key={idx}
-                        href={file}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-4 p-4 bg-gray-50 border border-gray-100 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 transition-all group"
-                      >
-                        <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-emerald-600 transition-colors">
-                          {file.toLowerCase().includes(".pdf") ? (
-                            <FileText className="w-6 h-6 text-emerald-600 group-hover:text-white" />
-                          ) : (
-                            <ImageIcon className="w-6 h-6 text-emerald-600 group-hover:text-white" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-slate-900 truncate">
-                            {file.split("/").pop() || `Evidence ${idx + 1}`}
+                  {(() => {
+                    // Robust URL extractor — handles plain strings, {url},
+                    // {fileUrl}, {file_url}, {path}, {key} from R2 storage
+                    const getFileUrl = (file) => {
+                      if (!file) return null;
+                      if (typeof file === "string") return file;
+                      return (
+                        file.url ||
+                        file.fileUrl ||
+                        file.file_url ||
+                        file.path ||
+                        file.key ||
+                        null
+                      );
+                    };
+                    const getFileName = (file, i) => {
+                      if (!file) return `Document ${i + 1}`;
+                      if (typeof file === "string")
+                        return file.split("/").pop() || `Evidence ${i + 1}`;
+                      return (
+                        file.file_name ||
+                        file.fileName ||
+                        file.name ||
+                        file.original_name ||
+                        (getFileUrl(file) || "").split("/").pop() ||
+                        `Document ${i + 1}`
+                      );
+                    };
+                    const isPdf = (url = "") =>
+                      url.toLowerCase().includes(".pdf") ||
+                      url.toLowerCase().includes("pdf");
+                    const isImage = (url = "") =>
+                      /\.(jpe?g|png|gif|webp|bmp|svg)(\?|$)/i.test(url);
+
+                    const docs =
+                      selectedEvidence.req_evidence ||
+                      selectedEvidence.evidence_documents ||
+                      selectedEvidence.documents ||
+                      [];
+
+                    if (!docs.length)
+                      return (
+                        <div className="text-center py-8">
+                          <FileText className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+                          <p className="text-sm text-gray-400">
+                            No evidence documents uploaded
                           </p>
-                          <p className="text-xs text-slate-400">
-                            {file.toLowerCase().includes(".pdf")
-                              ? "PDF Document"
-                              : "Image File"}
-                          </p>
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            window.open(file, "_blank");
-                          }}
-                          className="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors shrink-0"
+                      );
+
+                    return docs.map((file, idx) => {
+                      const fileUrl = getFileUrl(file);
+                      const fileName = getFileName(file, idx);
+                      if (!fileUrl) return null;
+                      return (
+                        <a
+                          key={idx}
+                          href={fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-4 p-4 bg-gray-50 border border-gray-100 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 transition-all group"
                         >
-                          <Download className="w-4 h-4" />
-                        </button>
-                      </a>
-                    ))
-                  ) : (
-                    <div className="text-center py-8">
-                      <FileText className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-                      <p className="text-sm text-gray-400">
-                        No evidence documents uploaded
-                      </p>
-                    </div>
-                  )}
+                          <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-emerald-600 transition-colors overflow-hidden">
+                            {isImage(fileUrl) ? (
+                              <img
+                                src={fileUrl}
+                                alt=""
+                                className="w-full h-full object-cover rounded-lg"
+                                onError={(e) => {
+                                  e.target.style.display = "none";
+                                }}
+                              />
+                            ) : isPdf(fileUrl) ? (
+                              <FileText className="w-6 h-6 text-emerald-600 group-hover:text-white" />
+                            ) : (
+                              <ImageIcon className="w-6 h-6 text-emerald-600 group-hover:text-white" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-900 truncate">
+                              {fileName}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              {isPdf(fileUrl)
+                                ? "PDF Document"
+                                : isImage(fileUrl)
+                                  ? "Image File"
+                                  : "Document"}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open(fileUrl, "_blank");
+                            }}
+                            className="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors shrink-0"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                        </a>
+                      );
+                    });
+                  })()}
                 </div>
               </motion.div>
             </motion.div>

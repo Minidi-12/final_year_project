@@ -19,6 +19,9 @@ import {
   Stethoscope,
   AlertCircle,
   Languages,
+  Copy,
+  Check,
+  MessageCircle,
 } from "lucide-react";
 import { useNavigate, Link } from "react-router";
 import { useCreateb_reqMutation, useGetAllgn_divisionsQuery } from "@/lib/api";
@@ -59,13 +62,17 @@ const STEP_ICONS = [User, MapPin, Wallet, Stethoscope, Briefcase, FileText];
 
 export default function RequestSupport() {
   const navigate = useNavigate();
-  const [lang, setLang] = useState("en"); 
+  const [lang, setLang] = useState("en");
   const t = getT(lang);
 
-  const [step, setStep] = useState(1);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [step,       setStep]       = useState(1);
+  const [isSuccess,  setIsSuccess]  = useState(false);
   const [reqEvidence, setReqEvidence] = useState([]);
-  const [errors, setErrors] = useState({});
+  const [errors,     setErrors]     = useState({});
+
+  // — Fix: store the reference number returned by the API after submission
+  const [submittedRef,    setSubmittedRef]    = useState("");
+  const [refCopied,       setRefCopied]       = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -122,7 +129,7 @@ export default function RequestSupport() {
     });
   };
 
-  
+
   const validate = (s) => {
     const e = {};
     const err = t.err;
@@ -200,7 +207,8 @@ export default function RequestSupport() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createB_req({
+      // — Fix: capture the API response so we can show the reference number
+      const result = await createB_req({
         b_profile: [
           {
             nic: formData.nic.trim(),
@@ -237,12 +245,23 @@ export default function RequestSupport() {
         req_evidence: reqEvidence,
         gn_division_Id: formData.gn_division,
       }).unwrap();
+
+      // Store reference number from the API response
+      const ref = result?.reference_no || result?._id || "";
+      setSubmittedRef(ref);
       setIsSuccess(true);
     } catch (err) {
       alert(
         `Submission failed: ${err.data?.message || err.message || "Unknown error"}`,
       );
     }
+  };
+
+  const copyRef = async () => {
+    if (!submittedRef) return;
+    await navigator.clipboard.writeText(submittedRef);
+    setRefCopied(true);
+    setTimeout(() => setRefCopied(false), 2500);
   };
 
   const inputCls = (field) =>
@@ -254,7 +273,6 @@ export default function RequestSupport() {
   const labelCls =
     "text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-1.5";
 
- 
   const STEPS = [
     { id: 1, label: t.steps.identity, icon: STEP_ICONS[0] },
     { id: 2, label: t.steps.location, icon: STEP_ICONS[1] },
@@ -264,28 +282,85 @@ export default function RequestSupport() {
     { id: 6, label: t.steps.review, icon: STEP_ICONS[5] },
   ];
 
+  // — Fix: completely rewritten success screen to prominently display
+  //   the reference number and explain how to use it on WhatsApp.
+  //   Previously it just showed a generic "your request was submitted" message
+  //   with no reference number — the core differentiator of the system.
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white flex items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-white rounded-3xl p-12 shadow-xl border border-emerald-100 text-center"
+          className="max-w-lg w-full bg-white rounded-3xl p-10 shadow-xl border border-emerald-100"
         >
-          <div className="w-20 h-20 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">
+              {t.success?.title ?? "Request Submitted!"}
+            </h1>
+            <p className="text-slate-500 text-sm leading-relaxed">
+              {t.success?.body ?? "Your request has been received and will be reviewed by a GN Officer."}
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-3">
-            {t.success.title}
-          </h1>
-          <p className="text-slate-500 text-sm leading-relaxed mb-8">
-            {t.success.body}
-          </p>
+
+          {/* Reference number — the most important element on this screen */}
+          {submittedRef && (
+            <div className="bg-emerald-950 rounded-2xl p-6 mb-6 text-center">
+              <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.3em] mb-3">
+                Your Reference Number
+              </p>
+              <p className="text-lg font-mono font-bold text-white break-all mb-4 leading-relaxed">
+                {submittedRef}
+              </p>
+              <button
+                onClick={copyRef}
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
+                  refCopied
+                    ? "bg-emerald-400 text-emerald-950"
+                    : "bg-white/10 text-white hover:bg-white/20"
+                }`}
+              >
+                {refCopied ? (
+                  <><Check className="w-3.5 h-3.5" /> Copied!</>
+                ) : (
+                  <><Copy className="w-3.5 h-3.5" /> Copy Reference</>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* WhatsApp status query instruction */}
+          <div className="flex items-start gap-4 bg-green-50 border border-green-100 rounded-2xl p-5 mb-6">
+            <MessageCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold text-green-800 mb-1 uppercase tracking-wide">
+                Track your case on WhatsApp
+              </p>
+              <p className="text-xs text-green-700 leading-relaxed">
+                Save this reference number and send it to our WhatsApp number to
+                check your case status at any time — no office visit needed.
+              </p>
+            </div>
+          </div>
+
+          {/* Save reminder */}
+          <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-8">
+            <Info className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800 leading-relaxed font-medium">
+              Please screenshot or write down your reference number. You will need
+              it to follow up on your request.
+            </p>
+          </div>
+
           <button
             onClick={() => navigate("/")}
             className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm transition-all"
           >
-            {t.backToHome}
+            {t.backToHome ?? "Back to Home"}
           </button>
         </motion.div>
       </div>
@@ -302,7 +377,7 @@ export default function RequestSupport() {
       >
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
-         
+
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
               <Heart className="w-4 h-4 text-white" />
@@ -312,9 +387,9 @@ export default function RequestSupport() {
             </span>
           </Link>
 
-          
+
           <div className="flex items-center gap-3">
-            
+
             <div className="flex items-center gap-1">
               {STEPS.map((s) => (
                 <div key={s.id} className="flex items-center">
@@ -342,7 +417,7 @@ export default function RequestSupport() {
               ))}
             </div>
 
-            
+
             <LangToggle
               lang={lang}
               onToggle={() => setLang((l) => (l === "en" ? "si" : "en"))}
@@ -582,21 +657,9 @@ export default function RequestSupport() {
                       </label>
                       <div className="grid grid-cols-3 gap-3">
                         {[
-                          {
-                            name: "safewater_access",
-                            label: t.s2.safeWater,
-                            
-                          },
-                          {
-                            name: "sanitation_access",
-                            label: t.s2.sanitation,
-                          
-                          },
-                          {
-                            name: "electricity_access",
-                            label: t.s2.electricity,
-                            
-                          },
+                          { name: "safewater_access",  label: t.s2.safeWater  },
+                          { name: "sanitation_access", label: t.s2.sanitation },
+                          { name: "electricity_access",label: t.s2.electricity},
                         ].map((u) => (
                           <label
                             key={u.name}
@@ -613,7 +676,6 @@ export default function RequestSupport() {
                               onChange={handleInput}
                               className="sr-only"
                             />
-                            <span className="text-xl">{u.emoji}</span>
                             <span className="text-xs font-semibold">
                               {u.label}
                             </span>
@@ -676,15 +738,9 @@ export default function RequestSupport() {
                         >
                           <option value="Government">{t.s3.employ.govt}</option>
                           <option value="Private">{t.s3.employ.priv}</option>
-                          <option value="Self employed">
-                            {t.s3.employ.self}
-                          </option>
-                          <option value="Unemployed">
-                            {t.s3.employ.unemp}
-                          </option>
-                          <option value="Daily wage">
-                            {t.s3.employ.daily}
-                          </option>
+                          <option value="Self employed">{t.s3.employ.self}</option>
+                          <option value="Unemployed">{t.s3.employ.unemp}</option>
+                          <option value="Daily wage">{t.s3.employ.daily}</option>
                         </select>
                         <Err msg={errors.employment_type} />
                       </div>
@@ -713,20 +769,11 @@ export default function RequestSupport() {
                       </label>
                       <div className="flex flex-wrap gap-2">
                         {[
-                          { val: "Samurdhi", label: t.s3.allowances.samurdhi },
-                          {
-                            val: "Elderly Allowance",
-                            label: t.s3.allowances.elderly,
-                          },
-                          {
-                            val: "Disability Allowance",
-                            label: t.s3.allowances.disability,
-                          },
-                          {
-                            val: "Ath Wasuma",
-                            label: t.s3.allowances.athWasuma,
-                          },
-                          { val: "Other", label: t.s3.allowances.other },
+                          { val: "Samurdhi",           label: t.s3.allowances.samurdhi   },
+                          { val: "Elderly Allowance",  label: t.s3.allowances.elderly    },
+                          { val: "Disability Allowance",label: t.s3.allowances.disability},
+                          { val: "Ath Wasuma",         label: t.s3.allowances.athWasuma  },
+                          { val: "Other",              label: t.s3.allowances.other      },
                         ].map((a) => (
                           <button
                             key={a.val}
@@ -825,7 +872,7 @@ export default function RequestSupport() {
                         <Err msg={errors.distanceToSchoolKm} />
                       </div>
                     </div>
-                    
+
                     <div
                       className={`p-5 rounded-xl border transition-all ${formData.chronic_illness.exists ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-200"}`}
                     >
@@ -944,7 +991,7 @@ export default function RequestSupport() {
                         {t.s5.subheading}
                       </p>
                     </div>
-                    
+
                     <div>
                       <label className={labelCls}>
                         {t.s5.supportType}{" "}
@@ -952,55 +999,24 @@ export default function RequestSupport() {
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                         {[
-                          {
-                            val: "financial",
-                           
-                            label: t.s5.types.financial,
-                          },
-                          {
-                            val: "medical",
-                           
-                            label: t.s5.types.medical,
-                          },
-                          {
-                            val: "educational",
-                           
-                            label: t.s5.types.educational,
-                          },
-                          {
-                            val: "sanitation",
-                          
-                            label: t.s5.types.sanitation,
-                          },
-                          {
-                            val: "pre-loved_items",
-                          
-                            label: t.s5.types.prelovedItems,
-                          },
-                          {
-                            val: "counselling",
-                           
-                            label: t.s5.types.counselling,
-                          },
-                          {
-                            val: "other",
-                            
-                            label: t.s5.types.other,
-                          },
+                          { val: "financial",     label: t.s5.types.financial     },
+                          { val: "medical",       label: t.s5.types.medical       },
+                          { val: "educational",   label: t.s5.types.educational   },
+                          { val: "sanitation",    label: t.s5.types.sanitation    },
+                          { val: "pre-loved_items",label: t.s5.types.prelovedItems},
+                          { val: "counselling",   label: t.s5.types.counselling   },
+                          { val: "other",         label: t.s5.types.other         },
                         ].map((type) => (
                           <button
                             key={type.val}
                             type="button"
-                            onClick={() =>
-                              toggleArray("support_types", type.val)
-                            }
+                            onClick={() => toggleArray("support_types", type.val)}
                             className={`flex items-center gap-2.5 p-3.5 rounded-xl border text-left transition-all ${
                               formData.support_types.includes(type.val)
                                 ? "bg-emerald-950 text-white border-emerald-950 shadow-md"
                                 : "bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50"
                             }`}
                           >
-                            <span className="text-lg">{type.emoji}</span>
                             <span className="text-xs font-semibold">
                               {type.label}
                             </span>
@@ -1012,7 +1028,7 @@ export default function RequestSupport() {
                       </div>
                       <Err msg={errors.support_types} />
                     </div>
-                    
+
                     <div>
                       <label className={labelCls}>
                         {t.s5.describe} <span className="text-red-400">*</span>{" "}
@@ -1037,7 +1053,7 @@ export default function RequestSupport() {
                         </span>
                       </div>
                     </div>
-                  
+
                     <div>
                       <label className={labelCls}>
                         {t.s5.urgency} <span className="text-red-400">*</span>
@@ -1063,7 +1079,7 @@ export default function RequestSupport() {
                       </div>
                       <Err msg={errors.selfrated_urgency} />
                     </div>
-                   
+
                     <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
                       <div className="flex items-center gap-2 mb-3">
                         <Upload className="w-4 h-4 text-slate-400" />
@@ -1122,23 +1138,14 @@ export default function RequestSupport() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        [t.s6.fields.name, formData.name],
-                        [t.s6.fields.nic, formData.nic.toUpperCase()],
-                        [
-                          t.s6.fields.age,
-                          `${formData.age} ${t.s6.fields.ageUnit}`,
-                        ],
-                        [t.s6.fields.phone, formData.phone_no],
-                        [
-                          t.s6.fields.gnDivision,
-                          getGnName(formData.gn_division),
-                        ],
-                        [
-                          t.s6.fields.income,
-                          `LKR ${Number(formData.monthly_income).toLocaleString()}/${t.s6.fields.incomeUnit}`,
-                        ],
+                        [t.s6.fields.name,       formData.name],
+                        [t.s6.fields.nic,        formData.nic.toUpperCase()],
+                        [t.s6.fields.age,        `${formData.age} ${t.s6.fields.ageUnit}`],
+                        [t.s6.fields.phone,      formData.phone_no],
+                        [t.s6.fields.gnDivision, getGnName(formData.gn_division)],
+                        [t.s6.fields.income,     `LKR ${Number(formData.monthly_income).toLocaleString()}/${t.s6.fields.incomeUnit}`],
                         [t.s6.fields.employment, formData.employment_type],
-                        [t.s6.fields.housing, formData.housing_type],
+                        [t.s6.fields.housing,    formData.housing_type],
                       ].map(([label, val]) => (
                         <div
                           key={label}
@@ -1173,7 +1180,7 @@ export default function RequestSupport() {
                         {t.s6.descLabel}
                       </span>
                       <p className="text-sm text-slate-700 leading-relaxed">
-                        "{formData.support_description}"
+                        &ldquo;{formData.support_description}&rdquo;
                       </p>
                     </div>
                     <div className="flex gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">

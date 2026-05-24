@@ -20,29 +20,52 @@ import {
   TrendingUp,
   MapPin,
   Target,
+  AlertCircle,
 } from "lucide-react";
 
 import { useNavigate, Link } from "react-router";
- 
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
- 
+
+// — Fix: helper to track previously submitted emails in sessionStorage
+//   so duplicate submissions within the same browser session are caught
+//   before hitting the API.
+const SUBMITTED_KEY = "hc_volunteer_submitted_emails";
+function getSubmittedEmails() {
+  try {
+    return JSON.parse(sessionStorage.getItem(SUBMITTED_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+function markEmailSubmitted(email) {
+  const list = getSubmittedEmails();
+  if (!list.includes(email.toLowerCase())) {
+    sessionStorage.setItem(SUBMITTED_KEY, JSON.stringify([...list, email.toLowerCase()]));
+  }
+}
+
 export default function Volunteer() {
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isLoadingMatches, setIsLoadingMatches] = useState(false);
+  const [isSubmitting,    setIsSubmitting]    = useState(false);
+  const [isSuccess,       setIsSuccess]       = useState(false);
+  const [isLoadingMatches,setIsLoadingMatches]= useState(false);
   const [matchedProjects, setMatchedProjects] = useState([]);
- 
+
+  // — Fix: per-field validation errors and touched tracking
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touched,     setTouched]     = useState({});
+
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    Phone_no: "",
-    skills: [],
+    name:            "",
+    email:           "",
+    Phone_no:        "",
+    skills:          [],
     selectedProject: "",
-    availability: "flexible",
-    message: "",
+    availability:    "flexible",
+    message:         "",
   });
- 
+
   const skillOptions = [
     "Teaching",
     "Medical Support",
@@ -54,15 +77,47 @@ export default function Volunteer() {
     "General Labor",
     "Disaster Relief",
   ];
- 
-  
+
+  // — Fix: frontend validation function
+  const validate = (data) => {
+    const e = {};
+    if (!data.name.trim())
+      e.name = "Please enter your full name.";
+    else if (data.name.trim().length < 2)
+      e.name = "Name must be at least 2 characters.";
+
+    if (!data.email.trim())
+      e.email = "Please enter your email address.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
+      e.email = "That doesn't look like a valid email.";
+    else if (getSubmittedEmails().includes(data.email.toLowerCase()))
+      e.email = "This email has already been used to register. Each volunteer uses a unique email.";
+
+    if (!data.Phone_no.trim())
+      e.Phone_no = "Please enter your phone number.";
+    else if (!/^[0-9]{10}$/.test(data.Phone_no.trim()))
+      e.Phone_no = "Enter a valid 10-digit Sri Lankan number (e.g. 0771234567).";
+
+    if (data.skills.length === 0)
+      e.skills = "Please select at least one skill.";
+
+    if (!data.selectedProject)
+      e.selectedProject = "Please select a project from the matches below.";
+
+    return e;
+  };
+
+  const blurField = (field) => {
+    setTouched(t => ({ ...t, [field]: true }));
+    setFieldErrors(validate(formData));
+  };
+
   useEffect(() => {
     const fetchMatchingProjects = async () => {
       if (formData.skills.length === 0) {
         setMatchedProjects([]);
         return;
       }
- 
       setIsLoadingMatches(true);
       try {
         const response = await axios.post(
@@ -77,54 +132,90 @@ export default function Volunteer() {
         setIsLoadingMatches(false);
       }
     };
- 
+
     const timeoutId = setTimeout(fetchMatchingProjects, 500);
     return () => clearTimeout(timeoutId);
   }, [formData.skills]);
- 
+
   const handleToggleSkill = (skill) => {
-    setFormData((prev) => ({
-      ...prev,
-      skills: prev.skills.includes(skill)
-        ? prev.skills.filter((s) => s !== skill)
-        : [...prev.skills, skill],
-      selectedProject: "", 
-    }));
+    const next = {
+      ...formData,
+      skills: formData.skills.includes(skill)
+        ? formData.skills.filter((s) => s !== skill)
+        : [...formData.skills, skill],
+      selectedProject: "",
+    };
+    setFormData(next);
+    if (touched.skills) setFieldErrors(validate(next));
   };
- 
+
+  const handleChange = (field, value) => {
+    const next = { ...formData, [field]: value };
+    setFormData(next);
+    if (touched[field]) setFieldErrors(validate(next));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
- 
-    if (!formData.selectedProject) {
-      alert("Please select a project");
-      return;
-    }
- 
+
+    // Touch all fields to show any remaining errors
+    const allTouched = Object.keys(formData).reduce((a, k) => ({ ...a, [k]: true }), {});
+    setTouched(allTouched);
+    const errs = validate(formData);
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
     setIsSubmitting(true);
     try {
       const response = await axios.post(`${API_URL}/api/volunteers`, {
-        project_id: formData.selectedProject,
-        name: formData.name,
-        email: formData.email,
-        Phone_no: formData.Phone_no,
-        skills: formData.skills.map((s) => s.toLowerCase()),
+        project_id:   formData.selectedProject,
+        name:         formData.name,
+        email:        formData.email,
+        Phone_no:     formData.Phone_no,
+        skills:       formData.skills.map((s) => s.toLowerCase()),
         availability: formData.availability,
-        message: formData.message,
+        message:      formData.message,
       });
- 
+
       console.log("Registration successful:", response.data);
+      // — Fix: mark this email as submitted so re-submissions are blocked
+      markEmailSubmitted(formData.email);
       setIsSuccess(true);
     } catch (error) {
       console.error("Registration error:", error);
-      alert(
-        error.response?.data?.error || "Registration failed. Please try again."
-      );
+      const serverMsg = error.response?.data?.error || "";
+      // Surface the error in-form rather than alert() for duplicate errors
+      if (serverMsg.toLowerCase().includes("duplicate") || serverMsg.toLowerCase().includes("already")) {
+        markEmailSubmitted(formData.email);
+        setFieldErrors(e => ({ ...e, email: "This email is already registered as a volunteer." }));
+        setTouched(t => ({ ...t, email: true }));
+      } else {
+        alert(serverMsg || "Registration failed. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
- 
- 
+
+  // Helper: error message display
+  const ErrMsg = ({ field }) =>
+    touched[field] && fieldErrors[field] ? (
+      <motion.p
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-1.5 text-[11px] font-semibold text-red-500 mt-1.5"
+      >
+        <AlertCircle className="w-3 h-3 shrink-0" /> {fieldErrors[field]}
+      </motion.p>
+    ) : null;
+
+  const inputCls = (field) =>
+    `w-full bg-gray-50 border rounded-2xl px-6 py-4 text-sm font-semibold focus:bg-white outline-none focus:ring-4 transition-all ${
+      touched[field] && fieldErrors[field]
+        ? "border-red-300 focus:ring-red-100 focus:border-red-400"
+        : "border-emerald-50 focus:ring-emerald-500/10 focus:border-emerald-500"
+    }`;
+
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center p-6 text-center">
@@ -154,18 +245,16 @@ export default function Volunteer() {
       </div>
     );
   }
- 
-  
+
   return (
     <div className="min-h-screen bg-[#FDFCFB] font-sans">
       <main className="pt-32 pb-20 px-6 max-w-5xl mx-auto flex flex-col lg:flex-row gap-16">
-     
+
         <div className="lg:w-2/5 space-y-10">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            
             <h1 className="text-5xl font-bold text-emerald-950 mb-6 leading-[1.1] tracking-tight">
               Small acts, <br />
               <span className="text-emerald-600 font-serif italic font-medium">
@@ -178,7 +267,7 @@ export default function Volunteer() {
               lives.
             </p>
           </motion.div>
- 
+
           <div className="space-y-6">
             {[
               {
@@ -219,69 +308,63 @@ export default function Volunteer() {
             ))}
           </div>
         </div>
- 
-        
+
         <div className="lg:w-3/5">
           <motion.form
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             onSubmit={handleSubmit}
+            noValidate
             className="bg-white rounded-[3rem] p-8 md:p-14 shadow-2xl shadow-emerald-950/5 border border-emerald-50 space-y-10"
           >
-            
+            {/* Personal details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-             
+
               <div className="space-y-3">
                 <label className="text-[10px] font-bold text-emerald-900/60 uppercase tracking-widest flex items-center gap-2">
-                  <User className="w-3.5 h-3.5" /> Full Name
+                  <User className="w-3.5 h-3.5" /> Full Name <span className="text-red-400">*</span>
                 </label>
                 <input
-                  required
                   type="text"
                   placeholder="Minidi Sathpiyumi"
-                  className="w-full bg-gray-50 border border-emerald-50 rounded-2xl px-6 py-4 text-sm font-semibold focus:bg-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
+                  className={inputCls("name")}
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => handleChange("name", e.target.value)}
+                  onBlur={() => blurField("name")}
                 />
+                <ErrMsg field="name" />
               </div>
- 
-             
+
               <div className="space-y-3">
                 <label className="text-[10px] font-bold text-emerald-900/60 uppercase tracking-widest flex items-center gap-2">
-                  <Mail className="w-3.5 h-3.5" /> Email Address
+                  <Mail className="w-3.5 h-3.5" /> Email Address <span className="text-red-400">*</span>
                 </label>
                 <input
-                  required
                   type="email"
                   placeholder="mini@example.com"
-                  className="w-full bg-gray-50 border border-emerald-50 rounded-2xl px-6 py-4 text-sm font-semibold focus:bg-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
+                  className={inputCls("email")}
                   value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  onBlur={() => blurField("email")}
                 />
+                <ErrMsg field="email" />
               </div>
- 
-             
+
               <div className="space-y-3">
                 <label className="text-[10px] font-bold text-emerald-900/60 uppercase tracking-widest flex items-center gap-2">
-                  <Phone className="w-3.5 h-3.5" /> Phone Number
+                  <Phone className="w-3.5 h-3.5" /> Phone Number <span className="text-red-400">*</span>
                 </label>
                 <input
-                  required
                   type="tel"
-                  pattern="[0-9]{10}"
                   placeholder="0771234567"
-                  className="w-full bg-gray-50 border border-emerald-50 rounded-2xl px-6 py-4 text-sm font-semibold focus:bg-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
+                  className={inputCls("Phone_no")}
                   value={formData.Phone_no}
-                  onChange={(e) =>
-                    setFormData({ ...formData, Phone_no: e.target.value })
-                  }
+                  onChange={(e) => handleChange("Phone_no", e.target.value)}
+                  onBlur={() => blurField("Phone_no")}
                 />
+                <ErrMsg field="Phone_no" />
               </div>
- 
+
               <div className="space-y-3">
                 <label className="text-[10px] font-bold text-emerald-900/60 uppercase tracking-widest flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5" /> Availability
@@ -289,9 +372,7 @@ export default function Volunteer() {
                 <select
                   className="w-full bg-gray-50 border border-emerald-50 rounded-2xl px-6 py-4 text-sm font-semibold focus:bg-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all appearance-none cursor-pointer"
                   value={formData.availability}
-                  onChange={(e) =>
-                    setFormData({ ...formData, availability: e.target.value })
-                  }
+                  onChange={(e) => handleChange("availability", e.target.value)}
                 >
                   <option value="weekdays">Weekdays</option>
                   <option value="weekends">Weekends</option>
@@ -299,11 +380,11 @@ export default function Volunteer() {
                 </select>
               </div>
             </div>
- 
-           
+
+            {/* Skills */}
             <div className="space-y-4">
               <label className="text-[10px] font-bold text-emerald-900/60 uppercase tracking-widest block">
-                Select Your Skills
+                Select Your Skills <span className="text-red-400">*</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {skillOptions.map((skill) => (
@@ -321,23 +402,21 @@ export default function Volunteer() {
                   </button>
                 ))}
               </div>
- 
               {formData.skills.length > 0 && (
                 <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest flex items-center gap-2">
                   <Target className="w-3 h-3" />
-                  {formData.skills.length} skill
-                  {formData.skills.length > 1 ? "s" : ""} selected
+                  {formData.skills.length} skill{formData.skills.length > 1 ? "s" : ""} selected
                 </p>
               )}
+              <ErrMsg field="skills" />
             </div>
- 
-           
+
+            {/* Project matches */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-bold text-emerald-900/60 uppercase tracking-widest">
-                  {matchedProjects.length > 0
-                    ? "Best Matches For You"
-                    : "Select Project"}
+                  {matchedProjects.length > 0 ? "Best Matches For You" : "Select Project"}
+                  {" "}<span className="text-red-400">*</span>
                 </label>
                 {isLoadingMatches && (
                   <div className="flex items-center gap-2 text-emerald-600">
@@ -348,8 +427,7 @@ export default function Volunteer() {
                   </div>
                 )}
               </div>
- 
-              
+
               {formData.skills.length === 0 ? (
                 <div className="p-8 rounded-2xl border-2 border-dashed border-emerald-100 text-center">
                   <Sparkles className="w-8 h-8 text-emerald-300 mx-auto mb-3" />
@@ -357,15 +435,13 @@ export default function Volunteer() {
                     Select your skills above to see matching projects
                   </p>
                 </div>
-              ) :  matchedProjects.length ===
-                  0 && !isLoadingMatches ? (
+              ) : matchedProjects.length === 0 && !isLoadingMatches ? (
                 <div className="p-8 rounded-2xl border-2 border-dashed border-amber-100 bg-amber-50/30 text-center">
                   <p className="text-xs text-amber-600 font-medium">
                     No matching projects found. Please try different skills.
                   </p>
                 </div>
               ) : (
-                
                 <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
                   <AnimatePresence mode="popLayout">
                     {matchedProjects.map((match, index) => (
@@ -376,19 +452,13 @@ export default function Volunteer() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ delay: index * 0.05 }}
-                        onClick={() =>
-                          setFormData({
-                            ...formData,
-                            selectedProject: match.project._id,
-                          })
-                        }
+                        onClick={() => handleChange("selectedProject", match.project._id)}
                         className={`p-5 rounded-2xl text-left transition-all border group relative overflow-hidden ${
                           formData.selectedProject === match.project._id
                             ? "bg-emerald-50 border-emerald-600 shadow-md"
                             : "bg-white border-emerald-50 hover:border-emerald-400/50 hover:shadow-sm"
                         }`}
                       >
-                       
                         <div
                           className={`absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wider flex items-center gap-1 ${
                             match.matchScore >= 70
@@ -401,7 +471,7 @@ export default function Volunteer() {
                           <TrendingUp className="w-3 h-3" />
                           {match.matchScore}% Match
                         </div>
- 
+
                         <div className="pr-20">
                           <div className="flex items-start gap-3 mb-3">
                             <CheckCircle2
@@ -426,8 +496,7 @@ export default function Volunteer() {
                               </p>
                             </div>
                           </div>
- 
-                         
+
                           <div className="flex items-center gap-3 mb-3 text-[9px] text-gray-400 font-bold uppercase">
                             <span className="flex items-center gap-1">
                               <MapPin className="w-3 h-3" />
@@ -437,8 +506,7 @@ export default function Volunteer() {
                               {match.project.category?.replace(/_/g, " ")}
                             </span>
                           </div>
- 
-                         
+
                           {match.matchedSkills?.length > 0 && (
                             <div className="flex flex-wrap gap-1.5">
                               {match.matchedSkills.map((skill, i) => (
@@ -451,8 +519,7 @@ export default function Volunteer() {
                               ))}
                             </div>
                           )}
- 
-                         
+
                           {match.missingSkills?.length > 0 && (
                             <div className="mt-2 flex flex-wrap gap-1.5">
                               {match.missingSkills.slice(0, 3).map((skill, i) => (
@@ -471,27 +538,25 @@ export default function Volunteer() {
                   </AnimatePresence>
                 </div>
               )}
+              <ErrMsg field="selectedProject" />
             </div>
- 
-           
+
+            {/* Message */}
             <div className="space-y-3">
               <label className="text-[10px] font-bold text-emerald-900/60 uppercase tracking-widest flex items-center gap-2">
-                <MessageSquare className="w-3.5 h-3.5" /> Why do you want to
-                volunteer?
+                <MessageSquare className="w-3.5 h-3.5" /> Why do you want to volunteer?
               </label>
               <textarea
                 placeholder="Share your passion..."
                 className="w-full bg-gray-50 border border-emerald-50 rounded-2xl px-6 py-4 text-sm font-semibold focus:bg-white outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all h-32 resize-none"
                 value={formData.message}
-                onChange={(e) =>
-                  setFormData({ ...formData, message: e.target.value })
-                }
+                onChange={(e) => handleChange("message", e.target.value)}
               />
             </div>
- 
-           <button
+
+            <button
               type="submit"
-              disabled={isSubmitting || !formData.selectedProject}
+              disabled={isSubmitting}
               className="w-full py-5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-200 disabled:cursor-not-allowed text-white rounded-[1.5rem] font-bold text-xs uppercase tracking-[0.25em] shadow-xl shadow-emerald-200 transition-all flex items-center justify-center gap-3 group active:scale-95"
             >
               {isSubmitting ? (
@@ -507,14 +572,14 @@ export default function Volunteer() {
               )}
             </button>
           </motion.form>
- 
+
           <p className="mt-8 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center justify-center gap-2">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             Private & Secure Application Process
           </p>
         </div>
       </main>
- 
+
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }

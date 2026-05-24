@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 
-const EMAILJS_SERVICE_ID  = "service_u3bx4mp";
-const EMAILJS_TEMPLATE_ID = "template_oanfk9h";
-const EMAILJS_PUBLIC_KEY  = "IwkOWOqF-aYmb6KsP";
+const EMAILJS_SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID  ?? "";
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID ?? "";
+const EMAILJS_PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY  ?? "";
 
 const EMPTY = { name: "", email: "", phone: "", subject: "", message: "" };
 
@@ -91,15 +91,23 @@ export default function ContactUs() {
     setErrors(errs);
     if (Object.keys(errs).length) return;
 
-    setStatus("sending"); setApiError("");
-
-    if (EMAILJS_SERVICE_ID==="YOUR_SERVICE_ID") {
+    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
       setStatus("error");
-      setApiError("EmailJS isn't configured yet - replace the placeholder credentials at the top of this file.");
+      setApiError(
+        "EmailJS isn't configured yet — add VITE_EMAILJS_SERVICE_ID, " +
+        "VITE_EMAILJS_TEMPLATE_ID, and VITE_EMAILJS_PUBLIC_KEY to your .env file."
+      );
       return;
     }
+
+    setStatus("sending"); setApiError("");
     try {
-      await emailjs.sendForm(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, formRef.current, EMAILJS_PUBLIC_KEY);
+      await emailjs.sendForm(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        formRef.current,
+        EMAILJS_PUBLIC_KEY
+      );
       setStatus("success"); setForm(EMPTY); setTouched({});
       setTimeout(()=>setStatus("idle"), 7000);
     } catch(err) {
@@ -112,7 +120,7 @@ export default function ContactUs() {
 
   const inp = (field) => ({
     className: `${baseInput} ${fieldBorder(errors[field], touched[field])}`,
-    style: { color: "#1f2937" },  
+    style: { color: "#1f2937" },
     name: field,
     value: form[field],
     onChange: change,
@@ -127,9 +135,8 @@ export default function ContactUs() {
           <img src="https://t4.ftcdn.net/jpg/05/85/98/03/360_F_585980340_geg6GaDREebGe3cGAjtuElD6gS7HBvGr.jpg"
             alt="" className="w-full h-full object-cover opacity-30"/>
         </div>
-       
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-emerald-950/95 to-teal-900/80"/>
 
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-emerald-950/95 to-teal-900/80"/>
         <div className="absolute -top-24 -right-24 w-[500px] h-[500px] rounded-full bg-emerald-400/10 blur-3xl"/>
         <div className="absolute -bottom-16 -left-16 w-[350px] h-[350px] rounded-full bg-teal-300/10 blur-3xl"/>
 
@@ -139,7 +146,7 @@ export default function ContactUs() {
               <span className="w-8 h-px bg-emerald-400 inline-block"/>Get in touch
             </p>
             <h1 className="text-5xl md:text-7xl font-bold text-white leading-[1.08] tracking-tight mb-7 max-w-3xl">
-               <span className="text-white">We're here to</span> {" "}
+               <span className="text-white">We're here to</span>{" "}
               <em className="text-emerald-400 not-italic font-serif">listen</em>
               <br/><span className="text-white">and support you.</span>
             </h1>
@@ -181,7 +188,6 @@ export default function ContactUs() {
                 </motion.div>
               ))}
 
-              {/* Hours */}
               <motion.div
                 initial={{opacity:0,x:-16}} whileInView={{opacity:1,x:0}}
                 viewport={{once:true}} transition={{delay:.35}}
@@ -275,7 +281,6 @@ export default function ContactUs() {
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-                          
                             <div>
                               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
                                 Your name <span className="text-red-400">*</span>
@@ -295,7 +300,6 @@ export default function ContactUs() {
                               <FieldMsg err={errors.name} touched={touched.name}/>
                             </div>
 
-                           
                             <div>
                               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
                                 Email address <span className="text-red-400">*</span>
@@ -316,10 +320,8 @@ export default function ContactUs() {
                             </div>
                           </div>
 
-                        
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-                         
                             <div>
                               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
                                 Phone <span className="text-gray-300 font-normal normal-case tracking-normal">(optional)</span>
@@ -339,7 +341,6 @@ export default function ContactUs() {
                               <FieldMsg err={errors.phone} touched={touched.phone}/>
                             </div>
 
-                          
                             <div>
                               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
                                 What's this about? <span className="text-red-400">*</span>
@@ -385,7 +386,6 @@ export default function ContactUs() {
                             <FieldMsg err={errors.message} touched={touched.message}/>
                           </div>
 
-                         
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 pt-2">
                             <p className="flex items-center gap-2 text-xs text-gray-400">
                               <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0"/>
