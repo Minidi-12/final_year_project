@@ -4,7 +4,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
 export const Api = createApi({
   reducerPath: 'Api',
   baseQuery: fetchBaseQuery({ baseUrl: `${BASE_URL}/api` }),
-  tagTypes: ['B_Req', 'GnOfficer'],
+  tagTypes: ['B_Req', 'GnOfficer', 'NewsPosts'],
   endpoints: (build) => ({
     getAllb_reqs: build.query({
       query: () => `/b_reqs`,
@@ -59,11 +59,27 @@ export const Api = createApi({
     updategn_division: build.mutation({ query: ({ id, ...gn_division }) => ({ url: `/gn_divisions/${id}`, method: "PUT", body: gn_division }) }),
     deletegn_division: build.mutation({ query: (id) => ({ url: `/gn_divisions/${id}`, method: "DELETE" }) }),
 
-    getAllnews_posts: build.query({ query: () => `/news_posts` }),
-    getnews_postByID: build.query({ query: (id) => ({ url: `/news_posts/${id}`, method: "GET" }) }),
-    createnews_post: build.mutation({ query: (news_post) => ({ url: `/news_posts`, method: "POST", body: news_post }) }),
-    updatenews_post: build.mutation({ query: ({ id, ...news_post }) => ({ url: `/news_posts/${id}`, method: "PUT", body: news_post }) }),
-    deletenews_post: build.mutation({ query: (id) => ({ url: `/news_posts/${id}`, method: "DELETE" }) }),
+    // — NewsPosts: cache tags added so Activities, Campaigns, and Upcoming
+    //   Activities pages auto-refresh immediately after an admin adds content.
+    getAllnews_posts: build.query({
+      query: () => `/news_posts`,
+      providesTags: ['NewsPosts'],
+    }),
+    getnews_postByID: build.query({
+      query: (id) => ({ url: `/news_posts/${id}`, method: "GET" }),
+    }),
+    createnews_post: build.mutation({
+      query: (news_post) => ({ url: `/news_posts`, method: "POST", body: news_post }),
+      invalidatesTags: ['NewsPosts'],
+    }),
+    updatenews_post: build.mutation({
+      query: ({ id, ...news_post }) => ({ url: `/news_posts/${id}`, method: "PUT", body: news_post }),
+      invalidatesTags: ['NewsPosts'],
+    }),
+    deletenews_post: build.mutation({
+      query: (id) => ({ url: `/news_posts/${id}`, method: "DELETE" }),
+      invalidatesTags: ['NewsPosts'],
+    }),
 
     getAllnotifications: build.query({ query: () => `/notifications` }),
     getnotificationByID: build.query({ query: (id) => ({ url: `/notifications/${id}`, method: "GET" }) }),

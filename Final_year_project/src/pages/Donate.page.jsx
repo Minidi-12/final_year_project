@@ -310,10 +310,10 @@ function TabScholarships({ copied, onCopy, navigate }) {
 
       <div className="grid sm:grid-cols-3 gap-4">
         <div className="sm:col-span-2 bg-emerald-950 rounded-3xl p-8 text-white relative overflow-hidden">
-          <div className="absolute -top-8 -right-8 w-40 h-40 bg-emerald-900 rounded-full opacity-60" />
+          
           <div className="relative z-10">
             <span className="inline-block px-3 py-1 bg-emerald-800 text-emerald-300 text-[8px] font-black uppercase tracking-widest rounded-lg mb-4">
-              University · 4–6 Year
+              University · 4-6 Year
             </span>
             <div className="flex items-baseline gap-2 mb-3">
               <span className="text-4xl font-black text-white font-mono">
@@ -558,7 +558,6 @@ export default function Donate() {
           <div className="space-y-6">
             
             <div className="bg-emerald-950 text-white rounded-3xl p-8 relative overflow-hidden">
-              <div className="absolute -top-12 -right-12 w-48 h-48 bg-emerald-900 rounded-full opacity-50" />
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-900/40 rounded-full opacity-30 -mb-10 -ml-10" />
               <div className="relative z-10">
                 <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-emerald-400 mb-6">
