@@ -124,6 +124,7 @@ export default function Login() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
+      console.log("API Response:", JSON.stringify(data, null, 2));
 
       localStorage.setItem("token",       data.token);
       localStorage.setItem("userRole",    data.user.role);
