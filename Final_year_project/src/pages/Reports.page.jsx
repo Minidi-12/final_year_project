@@ -62,7 +62,7 @@ const REPORTS = [
 export default function ReportsPage() {
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [downloading, setDownloading] = useState(null);
+
 
   const filteredReports = REPORTS.filter((report) => {
     const matchesFilter = filter === "all" || report.type === filter;
@@ -73,40 +73,9 @@ export default function ReportsPage() {
     return matchesFilter && matchesSearch;
   });
 
-  const onDownload = async (e, report) => {
+  const onDownload = (e, report) => {
     e.preventDefault();
-    setDownloading(report.id);
-
-    try {
-      // Fetch the PDF from R2 bucket
-      const response = await fetch(report.pdfUrl);
-
-      if (!response.ok) {
-        throw new Error("Failed to download PDF");
-      }
-
-      // Get the blob data
-      const blob = await response.blob();
-
-      // Create a temporary URL for the blob
-      const url = window.URL.createObjectURL(blob);
-
-      // Create a temporary anchor element and trigger download
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = report.filename;
-      document.body.appendChild(a);
-      a.click();
-
-      // Cleanup
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Download failed:", error);
-      alert("Failed to download the PDF. Please try again.");
-    } finally {
-      setDownloading(null);
-    }
+    window.open(report.pdfUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -237,19 +206,10 @@ export default function ReportsPage() {
                     <div className="mt-10 pt-8 border-t border-gray-50 flex items-center justify-start">
                       <button
                         onClick={(e) => onDownload(e, report)}
-                        disabled={downloading === report.id}
-                        className="inline-flex items-center gap-3 text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] hover:text-emerald-950 transition-colors group/link disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="inline-flex items-center gap-3 text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] hover:text-emerald-950 transition-colors group/link"
                       >
-                        <Download
-                          className={`w-4 h-4 transition-transform ${
-                            downloading === report.id
-                              ? "animate-bounce"
-                              : "group-hover/link:translate-y-0.5"
-                          }`}
-                        />
-                        {downloading === report.id
-                          ? "Downloading…"
-                          : "Download Full Access"}
+                        <Download className="w-4 h-4 transition-transform group-hover/link:translate-y-0.5" />
+                        Download Full Access
                       </button>
                     </div>
                   </div>
