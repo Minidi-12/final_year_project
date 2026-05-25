@@ -49,25 +49,25 @@ export default function AboutUs() {
       name: "Dr. Rohitha Perera",
       role: "CHAIRMAN",
       image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200&h=200",
+        "https://media.istockphoto.com/id/660150716/photo/young-businessman-with-beard-smiling-towards-camera.jpg?s=612x612&w=0&k=20&c=bmOLrjsgfJziLXsfquG87i_tvjD4GsPj41HAvzRcflQ=",
     },
     {
       name: "Samanthi Silva",
       role: "VICE CHAIRMAN",
       image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200&h=200",
+        "https://s3.amazonaws.com/bizenglish/wp-content/uploads/2023/04/03122952/Chandi-Dharmaratne-Chief-People-Officer-of-Axiata-Digital-Labs-e1680505219989.jpg",
     },
     {
       name: "Dr. Anura Disanayaka",
       role: "EXECUTIVE DIRECTOR",
       image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200&h=200",
+        "https://www.seekahost.com/wp-content/uploads/2020/09/Ehantha_Sirisena.jpg",
     },
     {
       name: "Nilukshi Bandara",
       role: "ADMINISTRATIVE SECRETARY",
       image:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200&h=200",
+        "https://media.licdn.com/dms/image/v2/D4E03AQEfeZ0x65SWsA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1678890963482?e=2147483647&v=beta&t=OtQsje_wX7uGQ8-cKJ2r7LJ_xnXseY6q2OCTqkMSUT4",
     },
   ];
 

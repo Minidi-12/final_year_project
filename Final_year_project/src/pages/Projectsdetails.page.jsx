@@ -26,26 +26,6 @@ import { useGetprojectByIDQuery } from "../lib/api";
 export default function ProjectDetail() {
   const { id } = useParams();
 
-  // — Fix: Share and Like state (was: dead buttons with no handlers)
-  const [liked, setLiked] = React.useState(false);
-  const [copied, setCopied] = React.useState(false);
-
-  const handleShare = async () => {
-    const url = window.location.href;
-    const title = project?.title ?? "HopeConnect Project";
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, url });
-      } catch {
-        // user cancelled — do nothing
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
   const {
     data: raw,
     isLoading,
@@ -115,11 +95,6 @@ export default function ProjectDetail() {
   const statusLabel = project.status.replace(/_/g, " ");
   const isActive = project.status === "active";
   const startYear = new Date(project.start_date).getFullYear();
-
-  // — Fix: was splitting on first word and always italicising it, which broke
-  //   titles like "Flood Relief…" (first word becomes italic regardless of meaning).
-  //   Now we render the title as a single clean string; the italic emerald accent
-  //   is provided by the category badge above, not by slicing the title itself.
   const titleWords = project.title.split(" ");
   const titleRest = titleWords.slice(1).join(" ");
 
@@ -155,10 +130,6 @@ export default function ProjectDetail() {
                 <span>{getCategoryLabel(project.category)}</span>
               </motion.div>
 
-              {/* — Fix: replaced fragile first-word-italic split with a stable
-                  two-part title: first word in emerald, rest in dark slate.
-                  This looks intentional for any project title instead of
-                  randomly italicising whatever word happens to come first. */}
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -355,46 +326,6 @@ export default function ProjectDetail() {
                 >
                   Join the Team
                 </Link>
-              </div>
-
-              {/* — Fix: Share2 and Heart now have real handlers.
-                  Share uses the Web Share API with clipboard fallback.
-                  Heart toggles a local liked state with visual feedback. */}
-              <div className="mt-8 flex items-center justify-center gap-2">
-                <button
-                  onClick={handleShare}
-                  title={copied ? "Link copied!" : "Share this project"}
-                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all ${
-                    copied
-                      ? "bg-emerald-50 border-emerald-200 text-emerald-600"
-                      : "bg-white border-gray-100 text-gray-400 hover:border-emerald-200 hover:text-emerald-600"
-                  }`}
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-3.5 h-3.5" /> Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Share2 className="w-3.5 h-3.5" /> Share
-                    </>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => setLiked((v) => !v)}
-                  title={liked ? "Remove from saved" : "Save project"}
-                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all ${
-                    liked
-                      ? "bg-red-50 border-red-200 text-red-500"
-                      : "bg-white border-gray-100 text-gray-400 hover:border-red-200 hover:text-red-400"
-                  }`}
-                >
-                  <Heart
-                    className={`w-3.5 h-3.5 transition-all ${liked ? "fill-red-500" : ""}`}
-                  />
-                  {liked ? "Saved" : "Save"}
-                </button>
               </div>
             </motion.div>
 

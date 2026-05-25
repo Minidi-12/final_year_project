@@ -677,7 +677,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── Recent Activities (same API as Activities page) ── */}
         <section className="py-16 md:py-24 bg-[#FAFAFA]">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex justify-between items-end mb-14">
@@ -806,7 +805,6 @@ export default function Home() {
         </section>
 
         <section className="bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-900 p-12 md:p-24 relative overflow-hidden text-center shadow-2xl">
-          {/* decorative glows */}
           <div className="absolute -top-20 -left-20 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-teal-600/20 rounded-full blur-3xl pointer-events-none" />
           <motion.div
