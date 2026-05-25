@@ -25,7 +25,7 @@ import {
 
 import { useNavigate, Link } from "react-router";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || "https://final-year-project-backend-su8k.onrender.com";
 
 // — Fix: helper to track previously submitted emails in sessionStorage
 //   so duplicate submissions within the same browser session are caught
