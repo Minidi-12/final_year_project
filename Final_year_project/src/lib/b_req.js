@@ -1,7 +1,7 @@
 export const putImage = async ({ file }) => {
   try {
     // Step 1: Request presigned URL from backend
-    const res = await fetch(`http://localhost:3000/api/b_reqs/images`, {
+    const res = await fetch(`https://final-year-project-backend-su8k.onrender.com/api/b_reqs/images`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
