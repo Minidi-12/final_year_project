@@ -2355,6 +2355,25 @@ function OfficersView({ gnOfficers, gnDivisions }) {
     }
   };
 
+  const handleDownloadProof = async () => {
+    if (!viewProofOfficer?.proofFileUrl) return;
+    try {
+      const response = await fetch(viewProofOfficer.proofFileUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download =
+        viewProofOfficer.proofFileName || `proof-${viewProofOfficer.name}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Download failed: " + (err.message || "Unable to download file"));
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -2489,7 +2508,9 @@ function OfficersView({ gnOfficers, gnDivisions }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={(e) => e.target === e.currentTarget && setViewProofOfficer(null)}
+            onClick={(e) =>
+              e.target === e.currentTarget && setViewProofOfficer(null)
+            }
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
@@ -2504,23 +2525,24 @@ function OfficersView({ gnOfficers, gnDivisions }) {
                     <FileText className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-slate-900">Proof Document</h3>
+                    <h3 className="text-base font-bold text-slate-900">
+                      Proof Document
+                    </h3>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      {viewProofOfficer.name} — {viewProofOfficer.gn_division_id?.gn_division_Name || "Officer"}
+                      {viewProofOfficer.name} —{" "}
+                      {viewProofOfficer.gn_division_id?.gn_division_Name ||
+                        "Officer"}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <a
-                    href={viewProofOfficer.proofFileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download
-                    className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold transition-all"
+                  <button
+                    onClick={handleDownloadProof}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold transition-all active:scale-95"
                   >
                     <Download className="w-3.5 h-3.5" />
                     Download
-                  </a>
+                  </button>
                   <a
                     href={viewProofOfficer.proofFileUrl}
                     target="_blank"
@@ -2545,8 +2567,12 @@ function OfficersView({ gnOfficers, gnDivisions }) {
                     {viewProofOfficer.name?.[0]?.toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-800">{viewProofOfficer.name}</p>
-                    <p className="text-[10px] text-slate-400">{viewProofOfficer.phone_no}</p>
+                    <p className="text-xs font-bold text-slate-800">
+                      {viewProofOfficer.name}
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      {viewProofOfficer.phone_no}
+                    </p>
                   </div>
                 </div>
                 <div className="h-8 w-px bg-slate-200 hidden sm:block" />
@@ -2555,14 +2581,20 @@ function OfficersView({ gnOfficers, gnDivisions }) {
                   {viewProofOfficer.gn_division_id?.gn_division_Name || "—"}
                 </div>
                 <div className="h-8 w-px bg-slate-200 hidden sm:block" />
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${viewProofOfficer.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${viewProofOfficer.isActive ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${viewProofOfficer.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${viewProofOfficer.isActive ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
+                  />
                   {viewProofOfficer.isActive ? "Active" : "Inactive"}
                 </span>
               </div>
 
               <div className="p-6">
-                {viewProofOfficer.proofFileUrl?.match(/\.(jpg|jpeg|png|webp|gif)(\?|$)/i) ? (
+                {viewProofOfficer.proofFileUrl?.match(
+                  /\.(jpg|jpeg|png|webp|gif)(\?|$)/i,
+                ) ? (
                   <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center min-h-[300px]">
                     <img
                       src={viewProofOfficer.proofFileUrl}
@@ -2571,7 +2603,10 @@ function OfficersView({ gnOfficers, gnDivisions }) {
                     />
                   </div>
                 ) : viewProofOfficer.proofFileUrl?.match(/\.pdf(\?|$)/i) ? (
-                  <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50" style={{ height: 460 }}>
+                  <div
+                    className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50"
+                    style={{ height: 460 }}
+                  >
                     <iframe
                       src={viewProofOfficer.proofFileUrl}
                       title="Proof PDF"
@@ -2584,8 +2619,12 @@ function OfficersView({ gnOfficers, gnDivisions }) {
                       <FileText className="w-8 h-8 text-blue-400" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-semibold text-slate-600 mb-1">Document uploaded</p>
-                      <p className="text-xs text-slate-400 mb-4">Click below to view the full document in a new tab</p>
+                      <p className="text-sm font-semibold text-slate-600 mb-1">
+                        Document uploaded
+                      </p>
+                      <p className="text-xs text-slate-400 mb-4">
+                        Click below to view the full document in a new tab
+                      </p>
                       <a
                         href={viewProofOfficer.proofFileUrl}
                         target="_blank"
@@ -2599,7 +2638,8 @@ function OfficersView({ gnOfficers, gnDivisions }) {
                   </div>
                 )}
                 <p className="mt-3 text-[10px] text-slate-400 text-center">
-                  Proof document submitted during officer registration · {viewProofOfficer.proofFileName || ""}
+                  Proof document submitted during officer registration ·{" "}
+                  {viewProofOfficer.proofFileName || ""}
                 </p>
               </div>
             </motion.div>
