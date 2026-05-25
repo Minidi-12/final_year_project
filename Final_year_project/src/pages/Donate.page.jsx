@@ -29,10 +29,10 @@ function useCopy() {
 }
 
 const IMPACT = [
-  { icon: Users, stat: "2,400+", label: "Families reached" },
-  { icon: BookOpen, stat: "1,200", label: "Students supported" },
-  { icon: Heart, stat: "100%", label: "Funds to projects" },
-  { icon: Smile, stat: "94%", label: "Donor satisfaction" },
+  { icon: Users, stat: "1000+", label: "Families reached" },
+  { icon: BookOpen, stat: "500", label: "Students supported" },
+  { icon: Heart, stat: "95%", label: "Funds to projects" },
+  { icon: Smile, stat: "90%", label: "Donor satisfaction" },
 ];
 
 const ITEM_CATEGORIES = [
