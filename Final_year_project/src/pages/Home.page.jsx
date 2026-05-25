@@ -37,7 +37,7 @@ import {
 } from "../constants";
 import { useRef } from "react";
 import Preloader from "../components/Preloader";
-import { useGetAllprojectsQuery } from "../lib/api";
+import { useGetAllprojectsQuery, useGetAllnews_postsQuery } from "../lib/api";
 
 const CountUp = ({ value, suffix = "" }) => {
   const [count, setCount] = useState(0);
@@ -89,6 +89,88 @@ const CountUp = ({ value, suffix = "" }) => {
     </div>
   );
 };
+
+function RecentActivities() {
+  const { data: allPosts = [], isLoading, isError } = useGetAllnews_postsQuery();
+
+  const activities = allPosts
+    .filter((p) => p.post_type === "activity")
+    .slice(0, 3);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-4 text-emerald-700">
+        <Loader2 className="w-10 h-10 animate-spin" />
+        <p className="text-sm font-medium">Loading activities…</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-4 text-red-500">
+        <AlertCircle className="w-10 h-10" />
+        <p className="text-sm font-medium">Failed to load activities.</p>
+      </div>
+    );
+  }
+
+  if (activities.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-4 text-gray-300">
+        <ActivityIcon className="w-12 h-12" />
+        <p className="text-sm font-medium text-gray-400">No activities published yet.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+      {activities.map((activity, index) => (
+        <motion.div
+          key={activity._id}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: index * 0.08 }}
+          className="group flex flex-col bg-white rounded-[3rem] overflow-hidden border border-gray-100 hover:shadow-2xl hover:shadow-emerald-900/5 transition-all h-full"
+        >
+          <div className="relative aspect-[4/3] overflow-hidden">
+            <img
+              src={
+                activity.image ||
+                "https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=800&auto=format&fit=crop"
+              }
+              alt={activity.title}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute bottom-6 left-6 flex gap-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+              <span className="px-3 py-1.5 bg-emerald-600 text-white text-[9px] font-bold rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-lg">
+                <Calendar className="w-3 h-3" /> {activity.date}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-10 flex flex-col flex-1">
+            <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-6">
+              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+              <span>{activity.location || "Sri Lanka"}</span>
+            </div>
+
+            <h3 className="text-2xl font-bold text-emerald-950 mb-6 leading-tight group-hover:text-emerald-700 transition-colors">
+              {activity.title}
+            </h3>
+
+            <p className="text-gray-500 text-sm leading-relaxed font-serif italic flex-1 border-l-2 border-emerald-50 pl-6 group-hover:border-emerald-200 transition-colors">
+              {activity.description}
+            </p>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
 
 export default function Home() {
   const navigate = useNavigate();
@@ -595,62 +677,42 @@ export default function Home() {
           </div>
         </section>
 
-        {/* <section className="py-16 md:py-24 bg-emerald-50/30">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className=" mb-12">
-            <h2 className="text-xs font-bold tracking-[0.3em] text-emerald-600 uppercase mb-4">
-              MOMENTS OF HOPE
-            </h2>
-            <h3 className="text-3xl font-bold text-emerald-950 mb-4 tracking-tight">
-              Recent Activities
-            </h3>
-            <div className="w-60 h-1 bg-emerald-600  rounded-full"></div>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {ACTIVITIES.slice(0, 3).map((activity, i) => (
-              <motion.div
-                key={activity.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white rounded-[2rem] overflow-hidden border border-gray-100 flex flex-col group hover:shadow-2xl hover:shadow-emerald-900/5 transition-all h-full"
+        {/* ── Recent Activities (same API as Activities page) ── */}
+        <section className="py-16 md:py-24 bg-[#FAFAFA]">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex justify-between items-end mb-14">
+              <div>
+                <h2 className="text-xs font-bold tracking-[0.3em] text-emerald-600 uppercase mb-4">
+                  MOMENTS OF HOPE
+                </h2>
+                <h3 className="text-3xl md:text-4xl font-bold text-emerald-950 mb-4 tracking-tight leading-[1.1]">
+                  Recent{" "}
+                  <span className="text-emerald-600 italic font-serif font-medium">
+                    Activities
+                  </span>
+                </h3>
+                <div className="w-64 h-1 bg-emerald-600 rounded-full" />
+              </div>
+              <Link
+                to="/activities"
+                className="hidden sm:flex text-emerald-600 font-bold items-center gap-1 hover:underline text-xs uppercase tracking-widest"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <img
-                    src={activity.image}
-                    alt={activity.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute top-4 left-4 flex gap-2">
-                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-[9px] font-bold text-emerald-900 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5">
-                      <Calendar className="w-3 h-3" /> {activity.date}
-                    </span>
-                  </div>
-                </div>
+                View all activities <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
 
-                <div className="p-8 flex flex-col flex-1 border-t-4 border-emerald-600">
-                  <h3 className="text-lg font-bold text-emerald-900 mb-4 leading-tight group-hover:text-emerald-600 transition-all line-clamp-2 duration-300">
-                    {activity.title}
-                  </h3>
+            <RecentActivities />
 
-                  <div className="flex items-center gap-2 mb-4 text-gray-400">
-                    <MapPin className="w-3 h-3" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">
-                      {activity.location}
-                    </span>
-                  </div>
-
-                  <p className="text-gray-500 text-sm leading-relaxed font-serif italic">
-                    {activity.shortDescription}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+            <div className="mt-10 text-center sm:hidden">
+              <Link
+                to="/activities"
+                className="inline-flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-widest hover:underline"
+              >
+                View all activities <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
-        </div>
-      </section> */}
+        </section>
 
         <section className="py-16 md:py-24 bg-emerald-950 border-y border-gray-50">
           <div className="max-w-7xl mx-auto px-4">
@@ -743,29 +805,32 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="bg-emerald-950 p-12 md:p-24 relative overflow-hidden text-center shadow-2xl">
+        <section className="bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-900 p-12 md:p-24 relative overflow-hidden text-center shadow-2xl">
+          {/* decorative glows */}
+          <div className="absolute -top-20 -left-20 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-teal-600/20 rounded-full blur-3xl pointer-events-none" />
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             className="relative z-10"
           >
-            <h3 className="text-3xl md:text-4xl font-bold text-white/90 mb-12 max-w-2xl mx-auto leading-tight tracking-tight flex flex-wrap items-center justify-center gap-3">
+            <h3 className="text-3xl md:text-4xl font-bold text-white mb-12 max-w-2xl mx-auto leading-tight tracking-tight flex flex-wrap items-center justify-center gap-3">
               We are really proud of our kind volunteers & donors{" "}
-              <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center ">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl flex items-center justify-center">
                 <Heart className="w-7 h-7 text-white animate-pulse" />
               </div>
             </h3>
             <div className="flex flex-col sm:flex-row justify-center gap-6">
               <Link
                 to="/donate"
-                className="px-12 py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[1.5rem] font-bold shadow-2xl shadow-emerald-950/40 transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-xs hover:shadow-lg hover:shadow-black/30 hover:scale-105 duration-300"
+                className="px-12 py-5 bg-white text-emerald-800 hover:bg-emerald-50 rounded-[1.5rem] font-bold shadow-2xl shadow-emerald-950/40 transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-xs hover:shadow-lg hover:shadow-black/30 hover:scale-105 duration-300"
               >
                 Donate Now
               </Link>
               <button
                 onClick={() => navigate("/volunteer")}
-                className="px-12 py-5 bg-white/10 hover:bg-white/20 text-white rounded-[1.5rem] font-bold transition-all flex items-center justify-center gap-2 backdrop-blur-md border border-white/20 uppercase tracking-widest text-xs hover:shadow-lg hover:shadow-black/30 hover:scale-105 duration-300"
+                className="px-12 py-5 bg-white/10 hover:bg-white/20 text-white rounded-[1.5rem] font-bold transition-all flex items-center justify-center gap-2 backdrop-blur-md border border-white/30 uppercase tracking-widest text-xs hover:shadow-lg hover:shadow-black/30 hover:scale-105 duration-300"
               >
                 <Users className="w-5 h-5" /> Be a Volunteer
               </button>
