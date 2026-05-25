@@ -30,6 +30,7 @@ export default function GNDashboard() {
 
   const userName = localStorage.getItem("userName") || "GN Officer";
   const gnDivision = localStorage.getItem("gnDivision") || "";
+  console.log("GN Division from localStorage:", gnDivision);
 
   const [view, setView] = useState("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,6 +45,7 @@ export default function GNDashboard() {
 
   const divisionRequests = allRequests.filter((req) => {
     const profile = req.b_profile?.[0];
+    console.log("profile.gn_division:", profile?.gn_division, "gnDivision:", gnDivision);
     if (!profile) return false;
     return gnDivision
       ? profile.gn_division?.toLowerCase() === gnDivision.toLowerCase()
