@@ -49,6 +49,7 @@ export default function GNDashboard() {
       ? profile.gn_division?.toLowerCase() === gnDivision.toLowerCase()
       : true;
   });
+  console.log("Division Requests:", divisionRequests);
 
   const filteredRequests = divisionRequests.filter((req) => {
     const profile = req.b_profile?.[0];
@@ -65,6 +66,7 @@ export default function GNDashboard() {
       profile.nic?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesView && matchesSearch;
   });
+  console.log("Filtered Requests:", filteredRequests);
 
   const stats = {
     pending: divisionRequests.filter((r) =>
