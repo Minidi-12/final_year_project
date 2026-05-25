@@ -362,15 +362,6 @@ export default function AdminDashboard() {
               >
                 <Home className="w-4 h-4" />
               </button>
-              {activeTab !== "overview" && (
-                <button
-                  onClick={refetch}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-700 transition-colors"
-                  title="Refresh"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </button>
-              )}
               {(activeTab === "queue" || activeTab === "overview") && (
                 <div className="relative">
                   <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
