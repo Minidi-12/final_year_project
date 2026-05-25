@@ -34,6 +34,7 @@ import {
   Trash2,
   AlertTriangle,
   Mail,
+  Home,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import {
@@ -354,6 +355,13 @@ export default function AdminDashboard() {
                   : activeTab}
             </h1>
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate("/")}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-700 transition-colors"
+                title="Back to Home"
+              >
+                <Home className="w-4 h-4" />
+              </button>
               <button
                 onClick={refetch}
                 className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-700 transition-colors"
@@ -1039,7 +1047,6 @@ function QueueView({
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
       <AnimatePresence>
         {confirmDeleteId && (
           <motion.div
@@ -1142,6 +1149,7 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
       await onUpdate({
         id,
         status: newStatus,
+        admin_notes: notes,
         updated_at: new Date().toISOString(),
       }).unwrap();
       setActionDone(true);
@@ -1298,8 +1306,6 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
               Evidence Documents
             </h3>
             {(() => {
-              // Robust URL extractor — handles plain strings, {url}, {fileUrl},
-              // {file_url}, {path}, {key} shapes coming from R2 storage
               const getFileUrl = (file) => {
                 if (!file) return null;
                 if (typeof file === "string") return file;
@@ -1481,6 +1487,33 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
             </div>
           )}
 
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-3">
+            <p className="text-xs font-bold text-slate-800 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              GN Officer Notes
+            </p>
+            {req.gn_notes ? (
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 space-y-2">
+                <p className="text-xs text-slate-700 leading-relaxed">
+                  {req.gn_notes}
+                </p>
+                {req.gn_verified && (
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
+                    <CheckCircle2 className="w-3 h-3" /> GN Verified
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center">
+                <p className="text-[11px] font-semibold text-slate-400">
+                  {["pending", "gn_assigned"].includes(req.status)
+                    ? "GN Officer has not reviewed this case yet"
+                    : "No notes were recorded by the GN Officer"}
+                </p>
+              </div>
+            )}
+          </div>
+
           {isActionable && !actionDone ? (
             <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
               <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
@@ -1525,18 +1558,48 @@ function DetailView({ id, allRequests, isUpdating, onUpdate, onBack }) {
               </div>
             </div>
           ) : actionDone ? (
-            <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-200 text-center">
-              <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
-              <p className="text-sm font-bold text-emerald-800">
-                Status updated successfully
-              </p>
+            <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-200 space-y-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                <p className="text-sm font-bold text-emerald-800">
+                  Status updated successfully
+                </p>
+              </div>
+              {notes && (
+                <div className="p-3 bg-white rounded-xl border border-emerald-100 space-y-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    Your Decision Notes
+                  </p>
+                  <p className="text-xs text-slate-700 leading-relaxed">
+                    {notes}
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 space-y-3">
               <p className="text-xs font-bold text-slate-500">
                 This case is already <strong>{req.status}</strong> — no further
                 action needed.
               </p>
+              {req.admin_notes && (
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    Admin Decision Notes
+                  </p>
+                  <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                    <p className="text-xs text-indigo-900 leading-relaxed">
+                      {req.admin_notes}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {req.updated_at && (
+                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 pt-1 border-t border-slate-200">
+                  <Clock className="w-3 h-3" />
+                  {new Date(req.updated_at).toLocaleString()}
+                </div>
+              )}
             </div>
           )}
 
