@@ -509,17 +509,6 @@ export default function VerificationDetail() {
                 </div>
               </div>
             </div>
-
-            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 text-center">
-                Reference
-              </h3>
-              <div className="text-center">
-                <span className="text-sm font-bold text-slate-700 font-mono">
-                  {request.reference_no || "Not assigned"}
-                </span>
-              </div>
-            </div>
           </div>
         </div>
       </main>
