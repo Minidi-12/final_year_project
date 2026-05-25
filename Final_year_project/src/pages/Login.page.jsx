@@ -129,7 +129,7 @@ export default function Login() {
       localStorage.setItem("userRole",    data.user.role);
       localStorage.setItem("userName",    data.user.name);
       localStorage.setItem("userId",      data.user.id);
-      localStorage.setItem("gnDivision",  data.user.gnDivision  || "");
+      localStorage.setItem("gnDivision", data.user.gn_division || data.user.gnDivision || "");
       localStorage.setItem("gnOfficerId", data.user.gnOfficerId || "");
 
       if (data.user.role === "GN_OFFICER") navigate("/verify");

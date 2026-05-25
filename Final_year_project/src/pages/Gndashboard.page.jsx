@@ -30,9 +30,7 @@ export default function GNDashboard() {
 
   const userName = localStorage.getItem("userName") || "GN Officer";
   const gnDivision = localStorage.getItem("gnDivision") || "";
-  const isMissingDivision = !gnDivision;
   console.log("GN Division from localStorage:", gnDivision);
-  console.log("Missing gnDivision:", isMissingDivision);
 
   const [view, setView] = useState("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,16 +45,11 @@ export default function GNDashboard() {
 
   const divisionRequests = allRequests.filter((req) => {
     const profile = req.b_profile?.[0];
-    console.log(
-      "profile.gn_division:",
-      profile?.gn_division,
-      "gnDivision:",
-      gnDivision,
-    );
+    console.log("profile.gn_division:", profile?.gn_division, "gnDivision:", gnDivision);
     if (!profile) return false;
-    // Only filter by division if gnDivision is set
-    if (!gnDivision) return false;
-    return profile.gn_division?.toLowerCase() === gnDivision.toLowerCase();
+    return gnDivision
+      ? profile.gn_division?.toLowerCase() === gnDivision.toLowerCase()
+      : true;
   });
   console.log("Division Requests:", divisionRequests);
 
@@ -177,21 +170,6 @@ export default function GNDashboard() {
           </header>
 
           <main className="flex-1 p-8 overflow-auto">
-            {isMissingDivision && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm text-red-600 font-bold">
-                    GN Division Not Found
-                  </p>
-                  <p className="text-xs text-red-500 mt-1">
-                    Your GN Division information is missing. Please log out and
-                    log in again, or contact your administrator.
-                  </p>
-                </div>
-              </div>
-            )}
-
             {gnDivision && (
               <div className="flex items-center gap-2 mb-6">
                 <MapPin className="w-4 h-4 text-emerald-500" />
