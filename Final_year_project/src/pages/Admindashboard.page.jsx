@@ -362,13 +362,15 @@ export default function AdminDashboard() {
               >
                 <Home className="w-4 h-4" />
               </button>
-              <button
-                onClick={refetch}
-                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-700 transition-colors"
-                title="Refresh"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </button>
+              {activeTab !== "overview" && (
+                <button
+                  onClick={refetch}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-700 transition-colors"
+                  title="Refresh"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+              )}
               {(activeTab === "queue" || activeTab === "overview") && (
                 <div className="relative">
                   <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -2265,6 +2267,7 @@ function ProjectsView() {
 function OfficersView({ gnOfficers, gnDivisions }) {
   const [showModal, setShowModal] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [viewProofOfficer, setViewProofOfficer] = useState(null);
   const { data: allDivisions = [] } = useGetAllgn_divisionsQuery();
   const [createGnOfficer, { isLoading: isCreating }] =
     useCreateGnOfficerMutation();
@@ -2438,6 +2441,21 @@ function OfficersView({ gnOfficers, gnDivisions }) {
                   </p>
                 </div>
               </div>
+
+              {officer.proofFileUrl ? (
+                <button
+                  onClick={() => setViewProofOfficer(officer)}
+                  className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-semibold transition-all active:scale-95"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  View Proof Document
+                </button>
+              ) : (
+                <div className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 bg-slate-50 text-slate-400 border border-slate-100 rounded-xl text-xs font-medium">
+                  <FileText className="w-3.5 h-3.5" />
+                  No proof document
+                </div>
+              )}
             </motion.div>
           ))
         )}
@@ -2463,6 +2481,131 @@ function OfficersView({ gnOfficers, gnDivisions }) {
           ))}
         </div>
       </div>
+
+      <AnimatePresence>
+        {viewProofOfficer && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={(e) => e.target === e.currentTarget && setViewProofOfficer(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">Proof Document</h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {viewProofOfficer.name} — {viewProofOfficer.gn_division_id?.gn_division_Name || "Officer"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={viewProofOfficer.proofFileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold transition-all"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download
+                  </a>
+                  <a
+                    href={viewProofOfficer.proofFileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-semibold transition-all"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    Open
+                  </a>
+                  <button
+                    onClick={() => setViewProofOfficer(null)}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 transition-colors ml-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="px-6 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-6 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 font-bold text-sm">
+                    {viewProofOfficer.name?.[0]?.toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">{viewProofOfficer.name}</p>
+                    <p className="text-[10px] text-slate-400">{viewProofOfficer.phone_no}</p>
+                  </div>
+                </div>
+                <div className="h-8 w-px bg-slate-200 hidden sm:block" />
+                <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <MapPin className="w-3 h-3 text-emerald-500" />
+                  {viewProofOfficer.gn_division_id?.gn_division_Name || "—"}
+                </div>
+                <div className="h-8 w-px bg-slate-200 hidden sm:block" />
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${viewProofOfficer.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${viewProofOfficer.isActive ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                  {viewProofOfficer.isActive ? "Active" : "Inactive"}
+                </span>
+              </div>
+
+              <div className="p-6">
+                {viewProofOfficer.proofFileUrl?.match(/\.(jpg|jpeg|png|webp|gif)(\?|$)/i) ? (
+                  <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center min-h-[300px]">
+                    <img
+                      src={viewProofOfficer.proofFileUrl}
+                      alt="Proof document"
+                      className="max-w-full max-h-[420px] object-contain rounded-xl"
+                    />
+                  </div>
+                ) : viewProofOfficer.proofFileUrl?.match(/\.pdf(\?|$)/i) ? (
+                  <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50" style={{ height: 460 }}>
+                    <iframe
+                      src={viewProofOfficer.proofFileUrl}
+                      title="Proof PDF"
+                      className="w-full h-full rounded-xl"
+                    />
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 flex flex-col items-center justify-center p-10 gap-4 min-h-[220px]">
+                    <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center">
+                      <FileText className="w-8 h-8 text-blue-400" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-semibold text-slate-600 mb-1">Document uploaded</p>
+                      <p className="text-xs text-slate-400 mb-4">Click below to view the full document in a new tab</p>
+                      <a
+                        href={viewProofOfficer.proofFileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all"
+                      >
+                        <Eye className="w-4 h-4" />
+                        Open Document
+                      </a>
+                    </div>
+                  </div>
+                )}
+                <p className="mt-3 text-[10px] text-slate-400 text-center">
+                  Proof document submitted during officer registration · {viewProofOfficer.proofFileName || ""}
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showModal && (
