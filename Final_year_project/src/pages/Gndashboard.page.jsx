@@ -15,7 +15,6 @@ import {
   FileText,
   History,
   Calendar,
-  RefreshCw,
   Clock,
   Eye,
   Image as ImageIcon,
@@ -36,7 +35,6 @@ export default function GNDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEvidence, setSelectedEvidence] = useState(null);
 
- 
   const {
     data: allRequests = [],
     isLoading,
@@ -44,7 +42,6 @@ export default function GNDashboard() {
     refetch,
   } = useGetAllb_reqsQuery();
 
-  
   const divisionRequests = allRequests.filter((req) => {
     const profile = req.b_profile?.[0];
     if (!profile) return false;
@@ -86,7 +83,6 @@ export default function GNDashboard() {
     navigate("/login");
   };
 
-  
   const initials = userName
     .split(" ")
     .map((w) => w[0])
@@ -99,7 +95,6 @@ export default function GNDashboard() {
       <AnimatePresence>{isLoading && <Preloader />}</AnimatePresence>
       <div className="min-h-screen bg-[#F8FAF9] flex font-sans">
         <aside className="w-64 bg-emerald-950 text-white flex flex-col hidden lg:flex">
-          
           <div className="p-7 flex items-center gap-3 border-b border-emerald-900/50">
             <div className="w-9 h-9 bg-emerald-500 rounded-xl flex items-center justify-center">
               <Heart className="w-5 h-5 text-white" />
@@ -109,7 +104,6 @@ export default function GNDashboard() {
             </span>
           </div>
 
-         
           <nav className="flex-1 p-5 space-y-2">
             {[
               { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -130,7 +124,6 @@ export default function GNDashboard() {
             ))}
           </nav>
 
-         
           <div className="p-5 border-t border-emerald-900/50">
             <button
               onClick={handleLogout}
@@ -152,16 +145,7 @@ export default function GNDashboard() {
               </h1>
             </div>
 
-          
             <div className="flex items-center gap-4">
-              <button
-                onClick={refetch}
-                className="w-9 h-9 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-xl hover:bg-emerald-50 transition-all"
-                title="Refresh"
-              >
-                <RefreshCw className="w-4 h-4 text-gray-400" />
-              </button>
-
               <div className="text-right hidden md:block">
                 <div className="text-sm font-bold text-slate-900">
                   {userName.startsWith("Mr.") || userName.startsWith("Ms.")
@@ -173,7 +157,6 @@ export default function GNDashboard() {
                 </div>
               </div>
 
-             
               <div className="w-11 h-11 bg-emerald-100 rounded-full flex items-center justify-center ring-2 ring-emerald-200 overflow-hidden">
                 <span className="text-sm font-black text-emerald-700">
                   {initials}
@@ -183,7 +166,6 @@ export default function GNDashboard() {
           </header>
 
           <main className="flex-1 p-8 overflow-auto">
-          
             {gnDivision && (
               <div className="flex items-center gap-2 mb-6">
                 <MapPin className="w-4 h-4 text-emerald-500" />
@@ -193,7 +175,6 @@ export default function GNDashboard() {
               </div>
             )}
 
-            
             {isError && (
               <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
@@ -210,7 +191,6 @@ export default function GNDashboard() {
               </div>
             )}
 
-           
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
               {[
                 {
@@ -270,7 +250,6 @@ export default function GNDashboard() {
               ))}
             </div>
 
-           
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -311,7 +290,6 @@ export default function GNDashboard() {
                         "Division",
                         "Submitted",
                         "Status",
-                        "Evidence",
                         "Action",
                       ].map((h) => (
                         <th
@@ -328,14 +306,14 @@ export default function GNDashboard() {
                       {isLoading ? (
                         [...Array(4)].map((_, i) => (
                           <tr key={i} className="animate-pulse">
-                            <td colSpan={7} className="px-6 py-5">
+                            <td colSpan={6} className="px-6 py-5">
                               <div className="h-7 bg-gray-100 rounded-lg w-full" />
                             </td>
                           </tr>
                         ))
                       ) : filteredRequests.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="px-6 py-16 text-center">
+                          <td colSpan={6} className="px-6 py-16 text-center">
                             <div className="flex flex-col items-center gap-3 opacity-20">
                               <FileText className="w-12 h-12" />
                               <p className="text-xs font-bold uppercase tracking-widest">
@@ -441,23 +419,6 @@ export default function GNDashboard() {
                                   </span>
                                 </div>
                               </td>
-                              <td className="px-6 py-5">
-                                {req.req_evidence &&
-                                req.req_evidence.length > 0 ? (
-                                  <button
-                                    onClick={() => setSelectedEvidence(req)}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg text-[10px] font-bold text-emerald-700 hover:bg-emerald-100 transition-all"
-                                  >
-                                    <ImageIcon className="w-3 h-3" />
-                                    {req.req_evidence.length} file
-                                    {req.req_evidence.length !== 1 ? "s" : ""}
-                                  </button>
-                                ) : (
-                                  <span className="text-[10px] text-gray-300 font-semibold">
-                                    No evidence
-                                  </span>
-                                )}
-                              </td>
                               <td className="px-6 py-5 text-right">
                                 <button
                                   onClick={() => navigate(`/verify/${req._id}`)}
@@ -479,7 +440,6 @@ export default function GNDashboard() {
           </main>
         </div>
 
-      
         <AnimatePresence>
           {selectedEvidence && (
             <motion.div
