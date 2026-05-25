@@ -29,6 +29,7 @@ export default function GNDashboard() {
   const navigate = useNavigate();
 
   const userName = localStorage.getItem("userName") || "GN Officer";
+  console.log("User Name from localStorage:", userName);
   const gnDivision = localStorage.getItem("gnDivision") || "";
   console.log("GN Division from localStorage:", gnDivision);
 
