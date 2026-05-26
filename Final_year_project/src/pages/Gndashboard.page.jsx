@@ -482,8 +482,6 @@ export default function GNDashboard() {
 
                 <div className="p-6 space-y-4">
                   {(() => {
-                    // Robust URL extractor — handles plain strings, {url},
-                    // {fileUrl}, {file_url}, {path}, {key} from R2 storage
                     const getFileUrl = (file) => {
                       if (!file) return null;
                       if (typeof file === "string") return file;

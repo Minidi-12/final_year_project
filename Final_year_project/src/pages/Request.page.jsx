@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useNavigate, Link } from "react-router";
 import { useCreateb_reqMutation, useGetAllgn_divisionsQuery } from "@/lib/api";
+import { putImage } from "@/lib/b_req";
 import ImageInput from "@/components/ImageInput";
 import { ChevronDown } from "lucide-react";
 import { getT } from "@/lib/i18n";
@@ -68,6 +69,7 @@ export default function RequestSupport() {
   const [step,       setStep]       = useState(1);
   const [isSuccess,  setIsSuccess]  = useState(false);
   const [reqEvidence, setReqEvidence] = useState([]);
+  const [isUploadingEvidence, setIsUploadingEvidence] = useState(false);
   const [errors,     setErrors]     = useState({});
 
   // — Fix: store the reference number returned by the API after submission
@@ -181,6 +183,8 @@ export default function RequestSupport() {
       else if (formData.support_description.trim().length < 10)
         e.support_description = err.descShort;
       if (!formData.selfrated_urgency) e.selfrated_urgency = err.urgencyReq;
+      if (!reqEvidence || reqEvidence.length === 0)
+        e.req_evidence = "Please upload at least one supporting document.";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -1086,39 +1090,91 @@ export default function RequestSupport() {
                         <span className="text-xs font-semibold text-slate-600">
                           {t.s5.docs}
                         </span>
-                        <span className="text-xs text-slate-400">
-                          ({t.s5.docsOptional})
-                        </span>
+                        <span className="text-red-400 text-xs font-semibold">*</span>
                       </div>
                       <ImageInput
-                        onChange={(files) => {
+                        onChange={async (files) => {
                           const list = Array.isArray(files) ? files : [files];
-                          setReqEvidence(
-                            list
-                              .filter(Boolean)
-                              .map((f) => ({
-                                fileUrl:
-                                  f.url ||
-                                  f.preview ||
-                                  (typeof f === "string" ? f : ""),
-                                file_name: f.name || "upload",
-                                description: "",
-                                uploaded_at: new Date().toISOString(),
-                              })),
-                          );
+                          const rawFiles = list.filter(Boolean);
+                          if (!rawFiles.length) {
+                            setReqEvidence([]);
+                            return;
+                          }
+                          setIsUploadingEvidence(true);
+                          try {
+                            const uploaded = await Promise.all(
+                              rawFiles.map(async (f) => {
+                                
+                                if (f instanceof File || f instanceof Blob) {
+                                  const url = await putImage({ file: f });
+                                  return {
+                                    fileUrl: url,
+                                    file_name: f.name || "upload",
+                                    description: "",
+                                    uploaded_at: new Date().toISOString(),
+                                  };
+                                }
+                              
+                                if (typeof f === "string") {
+                                  return {
+                                    fileUrl: f,
+                                    file_name: f.split("/").pop() || "upload",
+                                    description: "",
+                                    uploaded_at: new Date().toISOString(),
+                                  };
+                                }
+                               
+                                const fileObj = f.file || f.raw || f;
+                                if (fileObj instanceof File || fileObj instanceof Blob) {
+                                  const url = await putImage({ file: fileObj });
+                                  return {
+                                    fileUrl: url,
+                                    file_name: fileObj.name || f.name || "upload",
+                                    description: "",
+                                    uploaded_at: new Date().toISOString(),
+                                  };
+                                }
+                              
+                                return {
+                                  fileUrl: f.url || f.fileUrl || f.file_url || f.preview || "",
+                                  file_name: f.name || f.fileName || f.file_name || "upload",
+                                  description: "",
+                                  uploaded_at: new Date().toISOString(),
+                                };
+                              })
+                            );
+                            setReqEvidence(uploaded.filter((u) => u.fileUrl));
+                          } catch (err) {
+                            alert("File upload failed: " + (err.message || "Please try again."));
+                            setReqEvidence([]);
+                          } finally {
+                            setIsUploadingEvidence(false);
+                          }
                         }}
                         multiple
                         accept="image/*,.pdf"
                         maxSizeMB={5}
                         className="w-full"
                       />
-                      {reqEvidence.length > 0 && (
+                      {isUploadingEvidence && (
+                        <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-slate-500">
+                          <div className="w-3 h-3 border-2 border-slate-300 border-t-emerald-600 rounded-full animate-spin" />
+                          Uploading documents…
+                        </div>
+                      )}
+                      {!isUploadingEvidence && reqEvidence.length > 0 && (
                         <p className="mt-2 text-[11px] font-semibold text-emerald-600">
-                          {t.s5.filesReady(reqEvidence.length)}
+                          ✓ {reqEvidence.length} document{reqEvidence.length > 1 ? "s" : ""} uploaded successfully
+                        </p>
+                      )}
+                      {errors.req_evidence && (
+                        <p className="mt-2 text-[11px] font-semibold text-red-500 flex items-center gap-1">
+                          <span>⚠</span> {errors.req_evidence}
                         </p>
                       )}
                     </div>
                   </motion.div>
+
                 )}
 
                 {step === 6 && (
@@ -1211,10 +1267,20 @@ export default function RequestSupport() {
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-emerald-200 active:scale-95"
+                  disabled={isUploadingEvidence}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-emerald-200 active:scale-95 disabled:opacity-50"
                 >
-                  {step === 5 ? t.reviewApp : t.continue}{" "}
-                  <ArrowRight className="w-4 h-4" />
+                  {isUploadingEvidence ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Uploading…
+                    </>
+                  ) : (
+                    <>
+                      {step === 5 ? t.reviewApp : t.continue}{" "}
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               ) : (
                 <button
