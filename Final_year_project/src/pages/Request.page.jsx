@@ -22,10 +22,10 @@ import {
   Copy,
   Check,
   MessageCircle,
+  X,
 } from "lucide-react";
 import { useNavigate, Link } from "react-router";
 import { useCreateb_reqMutation, useGetAllgn_divisionsQuery } from "@/lib/api";
-import ImageInput from "@/components/ImageInput";
 import { ChevronDown } from "lucide-react";
 import { getT } from "@/lib/i18n";
 import Preloader from "@/components/Preloader";
@@ -1178,19 +1178,19 @@ export default function RequestSupport() {
                               return;
                             }
 
-                            // Store raw File objects — base64 encoding happens at submit time
+                            
                             const newItems = files.map((file) => ({
                               file,
                               file_name: file.name,
                             }));
                             setReqEvidence((prev) => [...prev, ...newItems]);
-                            // Clear validation error immediately
+                            
                             setErrors((prev) => {
                               const n = { ...prev };
                               delete n.req_evidence;
                               return n;
                             });
-                            e.target.value = ""; // allow re-selecting same file
+                            e.target.value = ""; 
                           }}
                         />
 
