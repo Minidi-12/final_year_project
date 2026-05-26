@@ -31,7 +31,6 @@ import { ChevronDown } from "lucide-react";
 import { getT } from "@/lib/i18n";
 import Preloader from "@/components/Preloader";
 
-
 const Err = ({ msg }) =>
   msg ? (
     <motion.p
@@ -42,7 +41,6 @@ const Err = ({ msg }) =>
       <AlertCircle className="w-3 h-3 shrink-0" /> {msg}
     </motion.p>
   ) : null;
-
 
 const LangToggle = ({ lang, onToggle }) => (
   <button
@@ -58,7 +56,6 @@ const LangToggle = ({ lang, onToggle }) => (
   </button>
 );
 
-
 const STEP_ICONS = [User, MapPin, Wallet, Stethoscope, Briefcase, FileText];
 
 export default function RequestSupport() {
@@ -66,16 +63,16 @@ export default function RequestSupport() {
   const [lang, setLang] = useState("en");
   const t = getT(lang);
 
-  const [step,       setStep]       = useState(1);
-  const [isSuccess,  setIsSuccess]  = useState(false);
+  const [step, setStep] = useState(1);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [reqEvidence, setReqEvidence] = useState([]);
   const [isUploadingEvidence, setIsUploadingEvidence] = useState(false);
   const evidenceInputRef = useRef(null);
-  const [errors,     setErrors]     = useState({});
+  const [errors, setErrors] = useState({});
 
   // — Fix: store the reference number returned by the API after submission
-  const [submittedRef,    setSubmittedRef]    = useState("");
-  const [refCopied,       setRefCopied]       = useState(false);
+  const [submittedRef, setSubmittedRef] = useState("");
+  const [refCopied, setRefCopied] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -131,7 +128,6 @@ export default function RequestSupport() {
       };
     });
   };
-
 
   const validate = (s) => {
     const e = {};
@@ -308,7 +304,8 @@ export default function RequestSupport() {
               {t.success?.title ?? "Request Submitted!"}
             </h1>
             <p className="text-slate-500 text-sm leading-relaxed">
-              {t.success?.body ?? "Your request has been received and will be reviewed by a GN Officer."}
+              {t.success?.body ??
+                "Your request has been received and will be reviewed by a GN Officer."}
             </p>
           </div>
 
@@ -330,9 +327,13 @@ export default function RequestSupport() {
                 }`}
               >
                 {refCopied ? (
-                  <><Check className="w-3.5 h-3.5" /> Copied!</>
+                  <>
+                    <Check className="w-3.5 h-3.5" /> Copied!
+                  </>
                 ) : (
-                  <><Copy className="w-3.5 h-3.5" /> Copy Reference</>
+                  <>
+                    <Copy className="w-3.5 h-3.5" /> Copy Reference
+                  </>
                 )}
               </button>
             </div>
@@ -356,8 +357,8 @@ export default function RequestSupport() {
           <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-8">
             <Info className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
             <p className="text-xs text-amber-800 leading-relaxed font-medium">
-              Please screenshot or write down your reference number. You will need
-              it to follow up on your request.
+              Please screenshot or write down your reference number. You will
+              need it to follow up on your request.
             </p>
           </div>
 
@@ -374,979 +375,1076 @@ export default function RequestSupport() {
 
   return (
     <>
-      <AnimatePresence>
-        {isCreating && <Preloader />}
-      </AnimatePresence>
+      <AnimatePresence>{isCreating && <Preloader />}</AnimatePresence>
       <div
         className={`min-h-screen bg-slate-50 font-sans ${lang === "si" ? "font-[Noto_Sans_Sinhala,sans-serif]" : ""}`}
       >
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-100 shadow-sm">
-        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-100 shadow-sm">
+          <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+                <Heart className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-base font-bold text-slate-900">
+                HOPE<span className="text-emerald-600">CONNECT</span>
+              </span>
+            </Link>
 
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-              <Heart className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-base font-bold text-slate-900">
-              HOPE<span className="text-emerald-600">CONNECT</span>
-            </span>
-          </Link>
-
-
-          <div className="flex items-center gap-3">
-
-            <div className="flex items-center gap-1">
-              {STEPS.map((s) => (
-                <div key={s.id} className="flex items-center">
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${
-                      s.id < step
-                        ? "bg-emerald-600 text-white"
-                        : s.id === step
-                          ? "bg-emerald-950 text-white ring-2 ring-emerald-300"
-                          : "bg-slate-100 text-slate-400"
-                    }`}
-                  >
-                    {s.id < step ? (
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    ) : (
-                      s.id
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                {STEPS.map((s) => (
+                  <div key={s.id} className="flex items-center">
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${
+                        s.id < step
+                          ? "bg-emerald-600 text-white"
+                          : s.id === step
+                            ? "bg-emerald-950 text-white ring-2 ring-emerald-300"
+                            : "bg-slate-100 text-slate-400"
+                      }`}
+                    >
+                      {s.id < step ? (
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      ) : (
+                        s.id
+                      )}
+                    </div>
+                    {s.id < 6 && (
+                      <div
+                        className={`w-5 h-0.5 mx-0.5 ${s.id < step ? "bg-emerald-600" : "bg-slate-200"}`}
+                      />
                     )}
                   </div>
-                  {s.id < 6 && (
-                    <div
-                      className={`w-5 h-0.5 mx-0.5 ${s.id < step ? "bg-emerald-600" : "bg-slate-200"}`}
-                    />
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
+
+              <LangToggle
+                lang={lang}
+                onToggle={() => setLang((l) => (l === "en" ? "si" : "en"))}
+              />
             </div>
-
-
-            <LangToggle
-              lang={lang}
-              onToggle={() => setLang((l) => (l === "en" ? "si" : "en"))}
-            />
           </div>
-        </div>
-      </nav>
+        </nav>
 
-      <main className="pt-28 pb-16 px-4 max-w-3xl mx-auto">
-        <div className="mb-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-emerald-700 text-[11px] font-bold uppercase tracking-wider">
-            {t.stepLabel(step, STEPS[step - 1].label)}
+        <main className="pt-28 pb-16 px-4 max-w-3xl mx-auto">
+          <div className="mb-6 text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-emerald-700 text-[11px] font-bold uppercase tracking-wider">
+              {t.stepLabel(step, STEPS[step - 1].label)}
+            </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <form onSubmit={handleSubmit}>
-            <div className="p-8">
-              <AnimatePresence mode="wait">
-                {step === 1 && (
-                  <motion.div
-                    key="s1"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6"
-                  >
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-900">
-                        {t.s1.heading}
-                      </h2>
-                      <p className="text-sm text-slate-400 mt-1">
-                        {t.s1.subheading}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <form onSubmit={handleSubmit}>
+              <div className="p-8">
+                <AnimatePresence mode="wait">
+                  {step === 1 && (
+                    <motion.div
+                      key="s1"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
                       <div>
-                        <label className={labelCls}>
-                          {t.s1.fullName}{" "}
-                          <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInput}
-                          placeholder={t.s1.namePlaceholder}
-                          className={inputCls("name")}
-                        />
-                        <Err msg={errors.name} />
+                        <h2 className="text-xl font-bold text-slate-900">
+                          {t.s1.heading}
+                        </h2>
+                        <p className="text-sm text-slate-400 mt-1">
+                          {t.s1.subheading}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                          <label className={labelCls}>
+                            {t.s1.fullName}{" "}
+                            <span className="text-red-400">*</span>
+                          </label>
+                          <input
+                            name="name"
+                            value={formData.name}
+                            onChange={handleInput}
+                            placeholder={t.s1.namePlaceholder}
+                            className={inputCls("name")}
+                          />
+                          <Err msg={errors.name} />
+                        </div>
+                        <div>
+                          <label className={labelCls}>
+                            {t.s1.nic} <span className="text-red-400">*</span>
+                          </label>
+                          <input
+                            name="nic"
+                            value={formData.nic}
+                            onChange={handleInput}
+                            placeholder={t.s1.nicPlaceholder}
+                            className={`${inputCls("nic")} uppercase`}
+                          />
+                          <Err msg={errors.nic} />
+                        </div>
+                        <div>
+                          <label className={labelCls}>
+                            {t.s1.age} <span className="text-red-400">*</span>
+                          </label>
+                          <input
+                            name="age"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={formData.age}
+                            onChange={handleInput}
+                            placeholder={t.s1.agePlaceholder}
+                            maxLength={3}
+                            className={`${inputCls("age")} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                          />
+                          <Err msg={errors.age} />
+                        </div>
+                        <div>
+                          <label className={labelCls}>
+                            {t.s1.gender}{" "}
+                            <span className="text-red-400">*</span>
+                          </label>
+                          <div className="flex gap-3">
+                            {[
+                              { val: "male", label: t.s1.male },
+                              { val: "female", label: t.s1.female },
+                            ].map((g) => (
+                              <button
+                                key={g.val}
+                                type="button"
+                                onClick={() => set("gender", g.val)}
+                                className={`flex-1 py-3.5 rounded-xl border text-sm font-semibold capitalize transition-all ${
+                                  formData.gender === g.val
+                                    ? "bg-emerald-950 text-white border-emerald-950"
+                                    : "bg-slate-50 text-slate-500 border-slate-200 hover:border-emerald-300"
+                                }`}
+                              >
+                                {g.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className={labelCls}>
+                            {t.s1.phone} <span className="text-red-400">*</span>
+                          </label>
+                          <input
+                            name="phone_no"
+                            type="text"
+                            inputMode="numeric"
+                            value={formData.phone_no}
+                            onChange={handleInput}
+                            placeholder={t.s1.phonePlaceholder}
+                            maxLength={10}
+                            className={inputCls("phone_no")}
+                          />
+                          <p className="text-[11px] text-slate-400 mt-1 pl-1">
+                            {t.s1.phoneHint}
+                          </p>
+                          <Err msg={errors.phone_no} />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {step === 2 && (
+                    <motion.div
+                      key="s2"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <div>
+                        <h2 className="text-xl font-bold text-slate-900">
+                          {t.s2.heading}
+                        </h2>
+                        <p className="text-sm text-slate-400 mt-1">
+                          {t.s2.subheading}
+                        </p>
                       </div>
                       <div>
                         <label className={labelCls}>
-                          {t.s1.nic} <span className="text-red-400">*</span>
+                          {t.s2.address} <span className="text-red-400">*</span>
                         </label>
-                        <input
-                          name="nic"
-                          value={formData.nic}
+                        <textarea
+                          name="address"
+                          value={formData.address}
                           onChange={handleInput}
-                          placeholder={t.s1.nicPlaceholder}
-                          className={`${inputCls("nic")} uppercase`}
+                          placeholder={t.s2.addressPlaceholder}
+                          rows={3}
+                          className={`${inputCls("address")} resize-none`}
                         />
-                        <Err msg={errors.nic} />
+                        <Err msg={errors.address} />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                          <label className={labelCls}>
+                            {t.s2.gnDivision}{" "}
+                            <span className="text-red-400">*</span>
+                          </label>
+                          <select
+                            name="gn_division"
+                            value={formData.gn_division}
+                            onChange={handleInput}
+                            disabled={isLoading}
+                            className={`${inputCls("gn_division")} appearance-auto`}
+                          >
+                            <option value="">
+                              {isLoading ? t.s2.gnLoading : t.s2.gnPlaceholder}
+                            </option>
+                            {gn_divisions?.map((d) => (
+                              <option key={d._id || d.id} value={d._id || d.id}>
+                                {d.gn_division_Name || d.name}
+                              </option>
+                            ))}
+                          </select>
+                          <Err msg={errors.gn_division} />
+                        </div>
+                        <div>
+                          <label className={labelCls}>
+                            {t.s2.housingType}{" "}
+                            <span className="text-red-400">*</span>
+                          </label>
+                          <select
+                            name="housing_type"
+                            value={formData.housing_type}
+                            onChange={handleInput}
+                            className={`${inputCls("housing_type")} appearance-auto`}
+                          >
+                            <option value="own">{t.s2.own}</option>
+                            <option value="rent">{t.s2.rent}</option>
+                            <option value="temporary">{t.s2.temporary}</option>
+                            <option value="no-fixed_shelter">
+                              {t.s2.noFixed}
+                            </option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className={labelCls}>
+                            {t.s2.familySize}{" "}
+                            <span className="text-red-400">*</span>
+                          </label>
+                          <input
+                            name="family_size"
+                            type="number"
+                            min="1"
+                            value={formData.family_size}
+                            onChange={handleInput}
+                            placeholder={t.s2.familyPlaceholder}
+                            className={inputCls("family_size")}
+                          />
+                          <Err msg={errors.family_size} />
+                        </div>
+                        <div>
+                          <label className={labelCls}>{t.s2.children}</label>
+                          <input
+                            name="children_under_18"
+                            type="number"
+                            min="0"
+                            value={formData.children_under_18}
+                            onChange={handleInput}
+                            placeholder="0"
+                            className={inputCls("children_under_18")}
+                          />
+                          <Err msg={errors.children_under_18} />
+                        </div>
                       </div>
                       <div>
                         <label className={labelCls}>
-                          {t.s1.age} <span className="text-red-400">*</span>
+                          {t.s2.utilities}{" "}
+                          <span className="text-slate-300 normal-case font-normal">
+                            ({t.selectAll})
+                          </span>
                         </label>
-                        <input
-                          name="age"
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={formData.age}
-                          onChange={handleInput}
-                          placeholder={t.s1.agePlaceholder}
-                          maxLength={3}
-                          className={`${inputCls("age")} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-                        />
-                        <Err msg={errors.age} />
-                      </div>
-                      <div>
-                        <label className={labelCls}>
-                          {t.s1.gender} <span className="text-red-400">*</span>
-                        </label>
-                        <div className="flex gap-3">
+                        <div className="grid grid-cols-3 gap-3">
                           {[
-                            { val: "male", label: t.s1.male },
-                            { val: "female", label: t.s1.female },
-                          ].map((g) => (
-                            <button
-                              key={g.val}
-                              type="button"
-                              onClick={() => set("gender", g.val)}
-                              className={`flex-1 py-3.5 rounded-xl border text-sm font-semibold capitalize transition-all ${
-                                formData.gender === g.val
-                                  ? "bg-emerald-950 text-white border-emerald-950"
-                                  : "bg-slate-50 text-slate-500 border-slate-200 hover:border-emerald-300"
+                            { name: "safewater_access", label: t.s2.safeWater },
+                            {
+                              name: "sanitation_access",
+                              label: t.s2.sanitation,
+                            },
+                            {
+                              name: "electricity_access",
+                              label: t.s2.electricity,
+                            },
+                          ].map((u) => (
+                            <label
+                              key={u.name}
+                              className={`flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all text-center ${
+                                formData[u.name]
+                                  ? "bg-emerald-50 border-emerald-300 text-emerald-700"
+                                  : "bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300"
                               }`}
                             >
-                              {g.label}
+                              <input
+                                type="checkbox"
+                                name={u.name}
+                                checked={formData[u.name]}
+                                onChange={handleInput}
+                                className="sr-only"
+                              />
+                              <span className="text-xs font-semibold">
+                                {u.label}
+                              </span>
+                              {formData[u.name] && (
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                              )}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {step === 3 && (
+                    <motion.div
+                      key="s3"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <div>
+                        <h2 className="text-xl font-bold text-slate-900">
+                          {t.s3.heading}
+                        </h2>
+                        <p className="text-sm text-slate-400 mt-1">
+                          {t.s3.subheading}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                          <label className={labelCls}>
+                            {t.s3.income}{" "}
+                            <span className="text-red-400">*</span>
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400 pointer-events-none">
+                              LKR
+                            </span>
+                            <input
+                              name="monthly_income"
+                              type="text"
+                              value={formData.monthly_income}
+                              onChange={handleInput}
+                              placeholder="0"
+                              className={`${inputCls("monthly_income")} pl-14`}
+                            />
+                          </div>
+                          <Err msg={errors.monthly_income} />
+                        </div>
+                        <div>
+                          <label className={labelCls}>
+                            {t.s3.employType}{" "}
+                            <span className="text-red-400">*</span>
+                          </label>
+                          <select
+                            name="employment_type"
+                            value={formData.employment_type}
+                            onChange={handleInput}
+                            className={`${inputCls("employment_type")} appearance-auto`}
+                          >
+                            <option value="Government">
+                              {t.s3.employ.govt}
+                            </option>
+                            <option value="Private">{t.s3.employ.priv}</option>
+                            <option value="Self employed">
+                              {t.s3.employ.self}
+                            </option>
+                            <option value="Unemployed">
+                              {t.s3.employ.unemp}
+                            </option>
+                            <option value="Daily wage">
+                              {t.s3.employ.daily}
+                            </option>
+                          </select>
+                          <Err msg={errors.employment_type} />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className={labelCls}>
+                            {t.s3.otherIncome}{" "}
+                            <span className="text-slate-300 normal-case font-normal">
+                              ({t.optional})
+                            </span>
+                          </label>
+                          <input
+                            name="otherIncomeSources"
+                            value={formData.otherIncomeSources}
+                            onChange={handleInput}
+                            placeholder={t.s3.otherPlaceholder}
+                            className={inputCls("otherIncomeSources")}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className={labelCls}>
+                          {t.s3.govtAllowance}{" "}
+                          <span className="text-slate-300 normal-case font-normal">
+                            ({t.selectAll})
+                          </span>
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            {
+                              val: "Samurdhi",
+                              label: t.s3.allowances.samurdhi,
+                            },
+                            {
+                              val: "Elderly Allowance",
+                              label: t.s3.allowances.elderly,
+                            },
+                            {
+                              val: "Disability Allowance",
+                              label: t.s3.allowances.disability,
+                            },
+                            {
+                              val: "Ath Wasuma",
+                              label: t.s3.allowances.athWasuma,
+                            },
+                            { val: "Other", label: t.s3.allowances.other },
+                          ].map((a) => (
+                            <button
+                              key={a.val}
+                              type="button"
+                              onClick={() =>
+                                toggleArray("GovtAllowance", a.val)
+                              }
+                              className={`px-4 py-2 rounded-lg text-xs font-semibold border transition-all ${
+                                formData.GovtAllowance.includes(a.val)
+                                  ? "bg-emerald-950 text-white border-emerald-950"
+                                  : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300 hover:text-emerald-700"
+                              }`}
+                            >
+                              {a.label}
                             </button>
                           ))}
                         </div>
                       </div>
-                      <div className="sm:col-span-2">
-                        <label className={labelCls}>
-                          {t.s1.phone} <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                          name="phone_no"
-                          type="text"
-                          inputMode="numeric"
-                          value={formData.phone_no}
-                          onChange={handleInput}
-                          placeholder={t.s1.phonePlaceholder}
-                          maxLength={10}
-                          className={inputCls("phone_no")}
-                        />
-                        <p className="text-[11px] text-slate-400 mt-1 pl-1">
-                          {t.s1.phoneHint}
-                        </p>
-                        <Err msg={errors.phone_no} />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
+                    </motion.div>
+                  )}
 
-                {step === 2 && (
-                  <motion.div
-                    key="s2"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6"
-                  >
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-900">
-                        {t.s2.heading}
-                      </h2>
-                      <p className="text-sm text-slate-400 mt-1">
-                        {t.s2.subheading}
-                      </p>
-                    </div>
-                    <div>
-                      <label className={labelCls}>
-                        {t.s2.address} <span className="text-red-400">*</span>
-                      </label>
-                      <textarea
-                        name="address"
-                        value={formData.address}
-                        onChange={handleInput}
-                        placeholder={t.s2.addressPlaceholder}
-                        rows={3}
-                        className={`${inputCls("address")} resize-none`}
-                      />
-                      <Err msg={errors.address} />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <div>
-                        <label className={labelCls}>
-                          {t.s2.gnDivision}{" "}
-                          <span className="text-red-400">*</span>
-                        </label>
-                        <select
-                          name="gn_division"
-                          value={formData.gn_division}
-                          onChange={handleInput}
-                          disabled={isLoading}
-                          className={`${inputCls("gn_division")} appearance-auto`}
-                        >
-                          <option value="">
-                            {isLoading ? t.s2.gnLoading : t.s2.gnPlaceholder}
-                          </option>
-                          {gn_divisions?.map((d) => (
-                            <option key={d._id || d.id} value={d._id || d.id}>
-                              {d.gn_division_Name || d.name}
-                            </option>
-                          ))}
-                        </select>
-                        <Err msg={errors.gn_division} />
-                      </div>
-                      <div>
-                        <label className={labelCls}>
-                          {t.s2.housingType}{" "}
-                          <span className="text-red-400">*</span>
-                        </label>
-                        <select
-                          name="housing_type"
-                          value={formData.housing_type}
-                          onChange={handleInput}
-                          className={`${inputCls("housing_type")} appearance-auto`}
-                        >
-                          <option value="own">{t.s2.own}</option>
-                          <option value="rent">{t.s2.rent}</option>
-                          <option value="temporary">{t.s2.temporary}</option>
-                          <option value="no-fixed_shelter">
-                            {t.s2.noFixed}
-                          </option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className={labelCls}>
-                          {t.s2.familySize}{" "}
-                          <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                          name="family_size"
-                          type="number"
-                          min="1"
-                          value={formData.family_size}
-                          onChange={handleInput}
-                          placeholder={t.s2.familyPlaceholder}
-                          className={inputCls("family_size")}
-                        />
-                        <Err msg={errors.family_size} />
-                      </div>
-                      <div>
-                        <label className={labelCls}>{t.s2.children}</label>
-                        <input
-                          name="children_under_18"
-                          type="number"
-                          min="0"
-                          value={formData.children_under_18}
-                          onChange={handleInput}
-                          placeholder="0"
-                          className={inputCls("children_under_18")}
-                        />
-                        <Err msg={errors.children_under_18} />
-                      </div>
-                    </div>
-                    <div>
-                      <label className={labelCls}>
-                        {t.s2.utilities}{" "}
-                        <span className="text-slate-300 normal-case font-normal">
-                          ({t.selectAll})
-                        </span>
-                      </label>
-                      <div className="grid grid-cols-3 gap-3">
-                        {[
-                          { name: "safewater_access",  label: t.s2.safeWater  },
-                          { name: "sanitation_access", label: t.s2.sanitation },
-                          { name: "electricity_access",label: t.s2.electricity},
-                        ].map((u) => (
-                          <label
-                            key={u.name}
-                            className={`flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all text-center ${
-                              formData[u.name]
-                                ? "bg-emerald-50 border-emerald-300 text-emerald-700"
-                                : "bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300"
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              name={u.name}
-                              checked={formData[u.name]}
-                              onChange={handleInput}
-                              className="sr-only"
-                            />
-                            <span className="text-xs font-semibold">
-                              {u.label}
-                            </span>
-                            {formData[u.name] && (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                            )}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {step === 3 && (
-                  <motion.div
-                    key="s3"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6"
-                  >
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-900">
-                        {t.s3.heading}
-                      </h2>
-                      <p className="text-sm text-slate-400 mt-1">
-                        {t.s3.subheading}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <div>
-                        <label className={labelCls}>
-                          {t.s3.income} <span className="text-red-400">*</span>
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400 pointer-events-none">
-                            LKR
-                          </span>
-                          <input
-                            name="monthly_income"
-                            type="text"
-                            value={formData.monthly_income}
-                            onChange={handleInput}
-                            placeholder="0"
-                            className={`${inputCls("monthly_income")} pl-14`}
-                          />
-                        </div>
-                        <Err msg={errors.monthly_income} />
-                      </div>
-                      <div>
-                        <label className={labelCls}>
-                          {t.s3.employType}{" "}
-                          <span className="text-red-400">*</span>
-                        </label>
-                        <select
-                          name="employment_type"
-                          value={formData.employment_type}
-                          onChange={handleInput}
-                          className={`${inputCls("employment_type")} appearance-auto`}
-                        >
-                          <option value="Government">{t.s3.employ.govt}</option>
-                          <option value="Private">{t.s3.employ.priv}</option>
-                          <option value="Self employed">{t.s3.employ.self}</option>
-                          <option value="Unemployed">{t.s3.employ.unemp}</option>
-                          <option value="Daily wage">{t.s3.employ.daily}</option>
-                        </select>
-                        <Err msg={errors.employment_type} />
-                      </div>
-                      <div className="sm:col-span-2">
-                        <label className={labelCls}>
-                          {t.s3.otherIncome}{" "}
-                          <span className="text-slate-300 normal-case font-normal">
-                            ({t.optional})
-                          </span>
-                        </label>
-                        <input
-                          name="otherIncomeSources"
-                          value={formData.otherIncomeSources}
-                          onChange={handleInput}
-                          placeholder={t.s3.otherPlaceholder}
-                          className={inputCls("otherIncomeSources")}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className={labelCls}>
-                        {t.s3.govtAllowance}{" "}
-                        <span className="text-slate-300 normal-case font-normal">
-                          ({t.selectAll})
-                        </span>
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {[
-                          { val: "Samurdhi",           label: t.s3.allowances.samurdhi   },
-                          { val: "Elderly Allowance",  label: t.s3.allowances.elderly    },
-                          { val: "Disability Allowance",label: t.s3.allowances.disability},
-                          { val: "Ath Wasuma",         label: t.s3.allowances.athWasuma  },
-                          { val: "Other",              label: t.s3.allowances.other      },
-                        ].map((a) => (
-                          <button
-                            key={a.val}
-                            type="button"
-                            onClick={() => toggleArray("GovtAllowance", a.val)}
-                            className={`px-4 py-2 rounded-lg text-xs font-semibold border transition-all ${
-                              formData.GovtAllowance.includes(a.val)
-                                ? "bg-emerald-950 text-white border-emerald-950"
-                                : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300 hover:text-emerald-700"
-                            }`}
-                          >
-                            {a.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {step === 4 && (
-                  <motion.div
-                    key="s4"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6"
-                  >
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-900">
-                        {t.s4.heading}
-                      </h2>
-                      <p className="text-sm text-slate-400 mt-1">
-                        {t.s4.subheading}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <div>
-                        <label className={labelCls}>
-                          {t.s4.hospital}{" "}
-                          <span className="text-red-400">*</span>
-                        </label>
-                        <div className="relative">
-                          <input
-                            name="nearest_hospitalkm"
-                            type="number"
-                            min="0"
-                            step="0.1"
-                            value={formData.nearest_hospitalkm}
-                            onChange={handleInput}
-                            placeholder="0"
-                            className={`${inputCls("nearest_hospitalkm")} pr-14`}
-                          />
-                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-300 font-medium pointer-events-none">
-                            {t.km}
-                          </span>
-                        </div>
-                        <Err msg={errors.nearest_hospitalkm} />
-                      </div>
-                      <div>
-                        <label className={labelCls}>
-                          {t.s4.education}{" "}
-                          <span className="text-red-400">*</span>
-                        </label>
-                        <select
-                          name="highestEducationLevel"
-                          value={formData.highestEducationLevel}
-                          onChange={handleInput}
-                          className={`${inputCls("highestEducationLevel")} appearance-auto`}
-                        >
-                          <option value="none">{t.s4.edu.none}</option>
-                          <option value="1-10">{t.s4.edu.grade}</option>
-                          <option value="O/Level">{t.s4.edu.olevel}</option>
-                          <option value="A/Level">{t.s4.edu.alevel}</option>
-                          <option value="degree">{t.s4.edu.degree}</option>
-                          <option value="other">{t.s4.edu.other}</option>
-                        </select>
-                        <Err msg={errors.highestEducationLevel} />
-                      </div>
-                      <div>
-                        <label className={labelCls}>{t.s4.school}</label>
-                        <div className="relative">
-                          <input
-                            name="distanceToSchoolKm"
-                            type="number"
-                            min="0"
-                            step="0.1"
-                            value={formData.distanceToSchoolKm}
-                            onChange={handleInput}
-                            placeholder="0"
-                            className={`${inputCls("distanceToSchoolKm")} pr-14`}
-                          />
-                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-300 font-medium pointer-events-none">
-                            {t.km}
-                          </span>
-                        </div>
-                        <Err msg={errors.distanceToSchoolKm} />
-                      </div>
-                    </div>
-
-                    <div
-                      className={`p-5 rounded-xl border transition-all ${formData.chronic_illness.exists ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-200"}`}
+                  {step === 4 && (
+                    <motion.div
+                      key="s4"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
                     >
-                      <label
-                        className="flex items-center gap-3 cursor-pointer"
-                        onClick={() =>
-                          setFormData((p) => ({
-                            ...p,
-                            chronic_illness: {
-                              ...p.chronic_illness,
-                              exists: !p.chronic_illness.exists,
-                            },
-                          }))
-                        }
-                      >
-                        <div
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0 ${formData.chronic_illness.exists ? "bg-red-500 border-red-500" : "border-slate-300"}`}
-                        >
-                          {formData.chronic_illness.exists && (
-                            <CheckCircle2 className="w-3 h-3 text-white" />
-                          )}
+                      <div>
+                        <h2 className="text-xl font-bold text-slate-900">
+                          {t.s4.heading}
+                        </h2>
+                        <p className="text-sm text-slate-400 mt-1">
+                          {t.s4.subheading}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                          <label className={labelCls}>
+                            {t.s4.hospital}{" "}
+                            <span className="text-red-400">*</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              name="nearest_hospitalkm"
+                              type="number"
+                              min="0"
+                              step="0.1"
+                              value={formData.nearest_hospitalkm}
+                              onChange={handleInput}
+                              placeholder="0"
+                              className={`${inputCls("nearest_hospitalkm")} pr-14`}
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-300 font-medium pointer-events-none">
+                              {t.km}
+                            </span>
+                          </div>
+                          <Err msg={errors.nearest_hospitalkm} />
                         </div>
                         <div>
-                          <span className="text-sm font-semibold text-slate-700">
-                            {t.s4.chronicTitle}
-                          </span>
-                          <p className="text-[11px] text-slate-400">
-                            {t.s4.chronicSub}
-                          </p>
-                        </div>
-                      </label>
-                      <AnimatePresence>
-                        {formData.chronic_illness.exists && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden mt-4"
-                          >
-                            <input
-                              value={formData.chronic_illness.description}
-                              onChange={(e) =>
-                                setFormData((p) => ({
-                                  ...p,
-                                  chronic_illness: {
-                                    ...p.chronic_illness,
-                                    description: e.target.value,
-                                  },
-                                }))
-                              }
-                              placeholder={t.s4.chronicPlaceholder}
-                              className="w-full bg-white border border-red-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-200"
-                            />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {[
-                        {
-                          name: "disabilityInHousehold",
-                          label: t.s4.disabilityLabel,
-                          sub: t.s4.disabilitySub,
-                        },
-                        {
-                          name: "childrenDroppedOut",
-                          label: t.s4.droppedLabel,
-                          sub: t.s4.droppedSub,
-                        },
-                      ].map((item) => (
-                        <label
-                          key={item.name}
-                          className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${formData[item.name] ? "bg-amber-50 border-amber-200" : "bg-slate-50 border-slate-200 hover:border-slate-300"}`}
-                        >
-                          <input
-                            type="checkbox"
-                            name={item.name}
-                            checked={formData[item.name]}
+                          <label className={labelCls}>
+                            {t.s4.education}{" "}
+                            <span className="text-red-400">*</span>
+                          </label>
+                          <select
+                            name="highestEducationLevel"
+                            value={formData.highestEducationLevel}
                             onChange={handleInput}
-                            className="sr-only"
-                          />
-                          <div
-                            className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${formData[item.name] ? "bg-amber-500 border-amber-500" : "border-slate-300"}`}
+                            className={`${inputCls("highestEducationLevel")} appearance-auto`}
                           >
-                            {formData[item.name] && (
+                            <option value="none">{t.s4.edu.none}</option>
+                            <option value="1-10">{t.s4.edu.grade}</option>
+                            <option value="O/Level">{t.s4.edu.olevel}</option>
+                            <option value="A/Level">{t.s4.edu.alevel}</option>
+                            <option value="degree">{t.s4.edu.degree}</option>
+                            <option value="other">{t.s4.edu.other}</option>
+                          </select>
+                          <Err msg={errors.highestEducationLevel} />
+                        </div>
+                        <div>
+                          <label className={labelCls}>{t.s4.school}</label>
+                          <div className="relative">
+                            <input
+                              name="distanceToSchoolKm"
+                              type="number"
+                              min="0"
+                              step="0.1"
+                              value={formData.distanceToSchoolKm}
+                              onChange={handleInput}
+                              placeholder="0"
+                              className={`${inputCls("distanceToSchoolKm")} pr-14`}
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-300 font-medium pointer-events-none">
+                              {t.km}
+                            </span>
+                          </div>
+                          <Err msg={errors.distanceToSchoolKm} />
+                        </div>
+                      </div>
+
+                      <div
+                        className={`p-5 rounded-xl border transition-all ${formData.chronic_illness.exists ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-200"}`}
+                      >
+                        <label
+                          className="flex items-center gap-3 cursor-pointer"
+                          onClick={() =>
+                            setFormData((p) => ({
+                              ...p,
+                              chronic_illness: {
+                                ...p.chronic_illness,
+                                exists: !p.chronic_illness.exists,
+                              },
+                            }))
+                          }
+                        >
+                          <div
+                            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0 ${formData.chronic_illness.exists ? "bg-red-500 border-red-500" : "border-slate-300"}`}
+                          >
+                            {formData.chronic_illness.exists && (
                               <CheckCircle2 className="w-3 h-3 text-white" />
                             )}
                           </div>
                           <div>
-                            <span className="text-sm font-semibold text-slate-700 block">
-                              {item.label}
+                            <span className="text-sm font-semibold text-slate-700">
+                              {t.s4.chronicTitle}
                             </span>
-                            <span className="text-[11px] text-slate-400">
-                              {item.sub}
-                            </span>
+                            <p className="text-[11px] text-slate-400">
+                              {t.s4.chronicSub}
+                            </p>
                           </div>
                         </label>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-
-                {step === 5 && (
-                  <motion.div
-                    key="s5"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6"
-                  >
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-900">
-                        {t.s5.heading}
-                      </h2>
-                      <p className="text-sm text-slate-400 mt-1">
-                        {t.s5.subheading}
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className={labelCls}>
-                        {t.s5.supportType}{" "}
-                        <span className="text-red-400">*</span>
-                      </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                        <AnimatePresence>
+                          {formData.chronic_illness.exists && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              className="overflow-hidden mt-4"
+                            >
+                              <input
+                                value={formData.chronic_illness.description}
+                                onChange={(e) =>
+                                  setFormData((p) => ({
+                                    ...p,
+                                    chronic_illness: {
+                                      ...p.chronic_illness,
+                                      description: e.target.value,
+                                    },
+                                  }))
+                                }
+                                placeholder={t.s4.chronicPlaceholder}
+                                className="w-full bg-white border border-red-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-200"
+                              />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
-                          { val: "financial",     label: t.s5.types.financial     },
-                          { val: "medical",       label: t.s5.types.medical       },
-                          { val: "educational",   label: t.s5.types.educational   },
-                          { val: "sanitation",    label: t.s5.types.sanitation    },
-                          { val: "pre-loved_items",label: t.s5.types.prelovedItems},
-                          { val: "counselling",   label: t.s5.types.counselling   },
-                          { val: "other",         label: t.s5.types.other         },
-                        ].map((type) => (
-                          <button
-                            key={type.val}
-                            type="button"
-                            onClick={() => toggleArray("support_types", type.val)}
-                            className={`flex items-center gap-2.5 p-3.5 rounded-xl border text-left transition-all ${
-                              formData.support_types.includes(type.val)
-                                ? "bg-emerald-950 text-white border-emerald-950 shadow-md"
-                                : "bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50"
-                            }`}
+                          {
+                            name: "disabilityInHousehold",
+                            label: t.s4.disabilityLabel,
+                            sub: t.s4.disabilitySub,
+                          },
+                          {
+                            name: "childrenDroppedOut",
+                            label: t.s4.droppedLabel,
+                            sub: t.s4.droppedSub,
+                          },
+                        ].map((item) => (
+                          <label
+                            key={item.name}
+                            className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${formData[item.name] ? "bg-amber-50 border-amber-200" : "bg-slate-50 border-slate-200 hover:border-slate-300"}`}
                           >
-                            <span className="text-xs font-semibold">
-                              {type.label}
-                            </span>
-                            {formData.support_types.includes(type.val) && (
-                              <CheckCircle2 className="w-3.5 h-3.5 ml-auto text-emerald-300" />
-                            )}
-                          </button>
+                            <input
+                              type="checkbox"
+                              name={item.name}
+                              checked={formData[item.name]}
+                              onChange={handleInput}
+                              className="sr-only"
+                            />
+                            <div
+                              className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${formData[item.name] ? "bg-amber-500 border-amber-500" : "border-slate-300"}`}
+                            >
+                              {formData[item.name] && (
+                                <CheckCircle2 className="w-3 h-3 text-white" />
+                              )}
+                            </div>
+                            <div>
+                              <span className="text-sm font-semibold text-slate-700 block">
+                                {item.label}
+                              </span>
+                              <span className="text-[11px] text-slate-400">
+                                {item.sub}
+                              </span>
+                            </div>
+                          </label>
                         ))}
                       </div>
-                      <Err msg={errors.support_types} />
-                    </div>
+                    </motion.div>
+                  )}
 
-                    <div>
-                      <label className={labelCls}>
-                        {t.s5.describe} <span className="text-red-400">*</span>{" "}
-                        <span className="text-slate-300 normal-case font-normal">
-                          ({t.min10chars})
-                        </span>
-                      </label>
-                      <textarea
-                        name="support_description"
-                        value={formData.support_description}
-                        onChange={handleInput}
-                        placeholder={t.s5.describePlaceholder}
-                        rows={5}
-                        className={`${inputCls("support_description")} resize-none`}
-                      />
-                      <div className="flex items-center justify-between mt-1.5 px-1">
-                        <Err msg={errors.support_description} />
-                        <span
-                          className={`text-[11px] font-semibold ml-auto ${formData.support_description.length === 0 ? "text-slate-300" : formData.support_description.length < 10 ? "text-red-400" : "text-emerald-500"}`}
-                        >
-                          {formData.support_description.length} / 10 min
-                        </span>
+                  {step === 5 && (
+                    <motion.div
+                      key="s5"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <div>
+                        <h2 className="text-xl font-bold text-slate-900">
+                          {t.s5.heading}
+                        </h2>
+                        <p className="text-sm text-slate-400 mt-1">
+                          {t.s5.subheading}
+                        </p>
                       </div>
-                    </div>
 
-                    <div>
-                      <label className={labelCls}>
-                        {t.s5.urgency} <span className="text-red-400">*</span>
-                      </label>
-                      <div className="grid grid-cols-5 gap-2">
-                        {["1", "2", "3", "4", "5"].map((val) => (
-                          <button
-                            key={val}
-                            type="button"
-                            onClick={() => set("selfrated_urgency", val)}
-                            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-center transition-all ${
-                              formData.selfrated_urgency === val
-                                ? "bg-slate-900 text-white border-slate-900 shadow-lg scale-105"
-                                : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
-                            }`}
+                      <div>
+                        <label className={labelCls}>
+                          {t.s5.supportType}{" "}
+                          <span className="text-red-400">*</span>
+                        </label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                          {[
+                            { val: "financial", label: t.s5.types.financial },
+                            { val: "medical", label: t.s5.types.medical },
+                            {
+                              val: "educational",
+                              label: t.s5.types.educational,
+                            },
+                            { val: "sanitation", label: t.s5.types.sanitation },
+                            {
+                              val: "pre-loved_items",
+                              label: t.s5.types.prelovedItems,
+                            },
+                            {
+                              val: "counselling",
+                              label: t.s5.types.counselling,
+                            },
+                            { val: "other", label: t.s5.types.other },
+                          ].map((type) => (
+                            <button
+                              key={type.val}
+                              type="button"
+                              onClick={() =>
+                                toggleArray("support_types", type.val)
+                              }
+                              className={`flex items-center gap-2.5 p-3.5 rounded-xl border text-left transition-all ${
+                                formData.support_types.includes(type.val)
+                                  ? "bg-emerald-950 text-white border-emerald-950 shadow-md"
+                                  : "bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50"
+                              }`}
+                            >
+                              <span className="text-xs font-semibold">
+                                {type.label}
+                              </span>
+                              {formData.support_types.includes(type.val) && (
+                                <CheckCircle2 className="w-3.5 h-3.5 ml-auto text-emerald-300" />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                        <Err msg={errors.support_types} />
+                      </div>
+
+                      <div>
+                        <label className={labelCls}>
+                          {t.s5.describe}{" "}
+                          <span className="text-red-400">*</span>{" "}
+                          <span className="text-slate-300 normal-case font-normal">
+                            ({t.min10chars})
+                          </span>
+                        </label>
+                        <textarea
+                          name="support_description"
+                          value={formData.support_description}
+                          onChange={handleInput}
+                          placeholder={t.s5.describePlaceholder}
+                          rows={5}
+                          className={`${inputCls("support_description")} resize-none`}
+                        />
+                        <div className="flex items-center justify-between mt-1.5 px-1">
+                          <Err msg={errors.support_description} />
+                          <span
+                            className={`text-[11px] font-semibold ml-auto ${formData.support_description.length === 0 ? "text-slate-300" : formData.support_description.length < 10 ? "text-red-400" : "text-emerald-500"}`}
                           >
-                            <span className="text-lg font-bold">{val}</span>
-                            <span className="text-[10px] font-semibold">
-                              {t.s5.urgencyLevels[val]}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                      <Err msg={errors.selfrated_urgency} />
-                    </div>
-
-                    <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Upload className="w-4 h-4 text-slate-400" />
-                        <span className="text-xs font-semibold text-slate-600">
-                          {t.s5.docs}
-                        </span>
-                        <span className="text-red-400 text-xs font-semibold">*</span>
+                            {formData.support_description.length} / 10 min
+                          </span>
+                        </div>
                       </div>
 
-                     
-                      <input
-                        ref={evidenceInputRef}
-                        type="file"
-                        multiple
-                        accept="image/*,.pdf"
-                        className="hidden"
-                        onChange={async (e) => {
-                          const files = Array.from(e.target.files || []);
-                          if (!files.length) return;
+                      <div>
+                        <label className={labelCls}>
+                          {t.s5.urgency} <span className="text-red-400">*</span>
+                        </label>
+                        <div className="grid grid-cols-5 gap-2">
+                          {["1", "2", "3", "4", "5"].map((val) => (
+                            <button
+                              key={val}
+                              type="button"
+                              onClick={() => set("selfrated_urgency", val)}
+                              className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-center transition-all ${
+                                formData.selfrated_urgency === val
+                                  ? "bg-slate-900 text-white border-slate-900 shadow-lg scale-105"
+                                  : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
+                              }`}
+                            >
+                              <span className="text-lg font-bold">{val}</span>
+                              <span className="text-[10px] font-semibold">
+                                {t.s5.urgencyLevels[val]}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                        <Err msg={errors.selfrated_urgency} />
+                      </div>
 
-                          
-                          const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
-                          if (oversized) {
-                            alert(`"${oversized.name}" exceeds 5 MB. Please choose a smaller file.`);
-                            e.target.value = "";
-                            return;
-                          }
+                      <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Upload className="w-4 h-4 text-slate-400" />
+                          <span className="text-xs font-semibold text-slate-600">
+                            {t.s5.docs}
+                          </span>
+                          <span className="text-red-400 text-xs font-semibold">
+                            *
+                          </span>
+                        </div>
 
-                          setIsUploadingEvidence(true);
-                         
-                          setErrors((prev) => { const n = { ...prev }; delete n.req_evidence; return n; });
-                          try {
-                            const uploaded = await Promise.all(
-                              files.map(async (file) => {
-                                const url = await putImage({ file });
-                                return {
-                                  fileUrl: url,
-                                  file_name: file.name,
-                                  description: "",
-                                  uploaded_at: new Date().toISOString(),
-                                };
-                              })
+                        <input
+                          ref={evidenceInputRef}
+                          type="file"
+                          multiple
+                          accept="image/*,.pdf"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files || []);
+                            if (!files.length) return;
+
+                            const oversized = files.find(
+                              (f) => f.size > 5 * 1024 * 1024,
                             );
-                            setReqEvidence((prev) => [...prev, ...uploaded.filter((u) => u.fileUrl)]);
-                          } catch (err) {
-                            alert("Upload failed: " + (err?.data?.message || err?.message || "Please try again."));
-                          } finally {
-                            setIsUploadingEvidence(false);
-                            e.target.value = ""; 
-                          }
-                        }}
-                      />
+                            if (oversized) {
+                              alert(
+                                `"${oversized.name}" exceeds 5 MB. Please choose a smaller file.`,
+                              );
+                              e.target.value = "";
+                              return;
+                            }
 
-                    
-                      <button
-                        type="button"
-                        onClick={() => evidenceInputRef.current?.click()}
-                        disabled={isUploadingEvidence}
-                        className={`w-full flex flex-col items-center justify-center gap-2 py-8 rounded-xl border-2 border-dashed transition-all
-                          ${errors.req_evidence
-                            ? "border-red-300 bg-red-50 hover:border-red-400"
-                            : "border-slate-200 bg-white hover:border-emerald-400 hover:bg-emerald-50"
+                            setIsUploadingEvidence(true);
+
+                            setErrors((prev) => {
+                              const n = { ...prev };
+                              delete n.req_evidence;
+                              return n;
+                            });
+                            try {
+                              const uploaded = await Promise.all(
+                                files.map(async (file) => {
+                                  try {
+                                    const url = await putImage({ file });
+                                    if (!url) {
+                                      console.warn(
+                                        `Upload failed for ${file.name}: No URL returned`,
+                                      );
+                                      return null;
+                                    }
+                                    return {
+                                      fileUrl: url,
+                                      file_name: file.name,
+                                      description: "",
+                                      uploaded_at: new Date().toISOString(),
+                                    };
+                                  } catch (fileErr) {
+                                    console.error(
+                                      `Upload failed for ${file.name}:`,
+                                      fileErr,
+                                    );
+                                    return null;
+                                  }
+                                }),
+                              );
+
+                              const validUploads = uploaded.filter(
+                                (u) => u !== null && u?.fileUrl,
+                              );
+
+                              if (validUploads.length === 0) {
+                                alert(
+                                  "Document upload failed. Please try again.",
+                                );
+                                return;
+                              }
+
+                              if (validUploads.length < files.length) {
+                                alert(
+                                  `Only ${validUploads.length} of ${files.length} file(s) uploaded successfully.`,
+                                );
+                              }
+
+                              setReqEvidence((prev) => [
+                                ...prev,
+                                ...validUploads,
+                              ]);
+                            } catch (err) {
+                              alert(
+                                "Upload failed: " +
+                                  (err?.data?.message ||
+                                    err?.message ||
+                                    "Please try again."),
+                              );
+                            } finally {
+                              setIsUploadingEvidence(false);
+                              e.target.value = "";
+                            }
+                          }}
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => evidenceInputRef.current?.click()}
+                          disabled={isUploadingEvidence}
+                          className={`w-full flex flex-col items-center justify-center gap-2 py-8 rounded-xl border-2 border-dashed transition-all
+                          ${
+                            errors.req_evidence
+                              ? "border-red-300 bg-red-50 hover:border-red-400"
+                              : "border-slate-200 bg-white hover:border-emerald-400 hover:bg-emerald-50"
                           }
                           disabled:opacity-60 disabled:cursor-not-allowed`}
-                      >
-                        {isUploadingEvidence ? (
-                          <>
-                            <div className="w-6 h-6 border-2 border-slate-200 border-t-emerald-600 rounded-full animate-spin" />
-                            <span className="text-xs font-semibold text-slate-500">Uploading…</span>
-                          </>
-                        ) : (
-                          <>
-                            <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
-                              <Upload className="w-5 h-5 text-slate-400" />
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm font-semibold text-slate-700">
-                                Click to upload documents
-                              </p>
-                              <p className="text-xs text-slate-400 mt-0.5">
-                                JPG, PNG or PDF · max 5 MB each
-                              </p>
-                            </div>
-                          </>
-                        )}
-                      </button>
-
-                      {/* Uploaded files list */}
-                      {reqEvidence.length > 0 && (
-                        <div className="mt-3 space-y-2">
-                          {reqEvidence.map((doc, i) => (
-                            <div
-                              key={i}
-                              className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl"
-                            >
-                              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
-                                <FileText className="w-4 h-4 text-emerald-600" />
-                              </div>
-                              <p className="text-xs font-semibold text-emerald-800 flex-1 truncate">
-                                {doc.file_name}
-                              </p>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setReqEvidence((prev) => prev.filter((_, j) => j !== i))
-                                }
-                                className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-red-100 text-slate-400 hover:text-red-600 transition-colors shrink-0"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          ))}
-                          <p className="text-[11px] font-semibold text-emerald-600 pl-1">
-                            ✓ {reqEvidence.length} document{reqEvidence.length > 1 ? "s" : ""} ready
-                          </p>
-                        </div>
-                      )}
-
-                      {errors.req_evidence && (
-                        <p className="mt-2 text-[11px] font-semibold text-red-500 flex items-center gap-1">
-                          <span>⚠</span> {errors.req_evidence}
-                        </p>
-                      )}
-                    </div>
-                  </motion.div>
-
-                )}
-
-                {step === 6 && (
-                  <motion.div
-                    key="s6"
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-6"
-                  >
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-900">
-                        {t.s6.heading}
-                      </h2>
-                      <p className="text-sm text-slate-400 mt-1">
-                        {t.s6.subheading}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        [t.s6.fields.name,       formData.name],
-                        [t.s6.fields.nic,        formData.nic.toUpperCase()],
-                        [t.s6.fields.age,        `${formData.age} ${t.s6.fields.ageUnit}`],
-                        [t.s6.fields.phone,      formData.phone_no],
-                        [t.s6.fields.gnDivision, getGnName(formData.gn_division)],
-                        [t.s6.fields.income,     `LKR ${Number(formData.monthly_income).toLocaleString()}/${t.s6.fields.incomeUnit}`],
-                        [t.s6.fields.employment, formData.employment_type],
-                        [t.s6.fields.housing,    formData.housing_type],
-                      ].map(([label, val]) => (
-                        <div
-                          key={label}
-                          className="p-4 bg-slate-50 rounded-xl border border-slate-100"
                         >
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block mb-0.5">
-                            {label}
-                          </span>
-                          <span className="text-sm font-semibold text-slate-800">
-                            {val || "—"}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide block mb-2">
-                        {t.s6.supportLabel}
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {formData.support_types.map((s) => (
-                          <span
-                            key={s}
-                            className="px-3 py-1 bg-white text-emerald-700 rounded-lg text-xs font-semibold border border-emerald-200 capitalize"
+                          {isUploadingEvidence ? (
+                            <>
+                              <div className="w-6 h-6 border-2 border-slate-200 border-t-emerald-600 rounded-full animate-spin" />
+                              <span className="text-xs font-semibold text-slate-500">
+                                Uploading…
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+                                <Upload className="w-5 h-5 text-slate-400" />
+                              </div>
+                              <div className="text-center">
+                                <p className="text-sm font-semibold text-slate-700">
+                                  Click to upload documents
+                                </p>
+                                <p className="text-xs text-slate-400 mt-0.5">
+                                  JPG, PNG or PDF · max 5 MB each
+                                </p>
+                              </div>
+                            </>
+                          )}
+                        </button>
+
+                        {/* Uploaded files list */}
+                        {reqEvidence.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            {reqEvidence.map((doc, i) => (
+                              <div
+                                key={i}
+                                className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl"
+                              >
+                                <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
+                                  <FileText className="w-4 h-4 text-emerald-600" />
+                                </div>
+                                <p className="text-xs font-semibold text-emerald-800 flex-1 truncate">
+                                  {doc.file_name}
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setReqEvidence((prev) =>
+                                      prev.filter((_, j) => j !== i),
+                                    )
+                                  }
+                                  className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-red-100 text-slate-400 hover:text-red-600 transition-colors shrink-0"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                            <p className="text-[11px] font-semibold text-emerald-600 pl-1">
+                              ✓ {reqEvidence.length} document
+                              {reqEvidence.length > 1 ? "s" : ""} ready
+                            </p>
+                          </div>
+                        )}
+
+                        {errors.req_evidence && (
+                          <p className="mt-2 text-[11px] font-semibold text-red-500 flex items-center gap-1">
+                            <span>⚠</span> {errors.req_evidence}
+                          </p>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {step === 6 && (
+                    <motion.div
+                      key="s6"
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="space-y-6"
+                    >
+                      <div>
+                        <h2 className="text-xl font-bold text-slate-900">
+                          {t.s6.heading}
+                        </h2>
+                        <p className="text-sm text-slate-400 mt-1">
+                          {t.s6.subheading}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          [t.s6.fields.name, formData.name],
+                          [t.s6.fields.nic, formData.nic.toUpperCase()],
+                          [
+                            t.s6.fields.age,
+                            `${formData.age} ${t.s6.fields.ageUnit}`,
+                          ],
+                          [t.s6.fields.phone, formData.phone_no],
+                          [
+                            t.s6.fields.gnDivision,
+                            getGnName(formData.gn_division),
+                          ],
+                          [
+                            t.s6.fields.income,
+                            `LKR ${Number(formData.monthly_income).toLocaleString()}/${t.s6.fields.incomeUnit}`,
+                          ],
+                          [t.s6.fields.employment, formData.employment_type],
+                          [t.s6.fields.housing, formData.housing_type],
+                        ].map(([label, val]) => (
+                          <div
+                            key={label}
+                            className="p-4 bg-slate-50 rounded-xl border border-slate-100"
                           >
-                            {s}
-                          </span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block mb-0.5">
+                              {label}
+                            </span>
+                            <span className="text-sm font-semibold text-slate-800">
+                              {val || "—"}
+                            </span>
+                          </div>
                         ))}
                       </div>
-                    </div>
-                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block mb-1.5">
-                        {t.s6.descLabel}
-                      </span>
-                      <p className="text-sm text-slate-700 leading-relaxed">
-                        &ldquo;{formData.support_description}&rdquo;
-                      </p>
-                    </div>
-                    <div className="flex gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
-                      <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                      <p className="text-xs text-amber-800 font-medium leading-relaxed">
-                        {t.s6.disclaimer}
-                      </p>
-                    </div>
-                  </motion.div>
+                      <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+                        <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide block mb-2">
+                          {t.s6.supportLabel}
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {formData.support_types.map((s) => (
+                            <span
+                              key={s}
+                              className="px-3 py-1 bg-white text-emerald-700 rounded-lg text-xs font-semibold border border-emerald-200 capitalize"
+                            >
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block mb-1.5">
+                          {t.s6.descLabel}
+                        </span>
+                        <p className="text-sm text-slate-700 leading-relaxed">
+                          &ldquo;{formData.support_description}&rdquo;
+                        </p>
+                      </div>
+                      <div className="flex gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
+                        <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                        <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                          {t.s6.disclaimer}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="px-8 py-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                {step > 1 ? (
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-xl hover:border-slate-300 transition-all"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> {t.back}
+                  </button>
+                ) : (
+                  <div />
                 )}
-              </AnimatePresence>
-            </div>
 
-            <div className="px-8 py-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-              {step > 1 ? (
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-xl hover:border-slate-300 transition-all"
-                >
-                  <ArrowLeft className="w-4 h-4" /> {t.back}
-                </button>
-              ) : (
-                <div />
-              )}
+                {step < 6 ? (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={isUploadingEvidence}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-emerald-200 active:scale-95 disabled:opacity-50"
+                  >
+                    {isUploadingEvidence ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Uploading…
+                      </>
+                    ) : (
+                      <>
+                        {step === 5 ? t.reviewApp : t.continue}{" "}
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isCreating}
+                    className="flex items-center gap-2 px-8 py-2.5 bg-emerald-950 hover:bg-black text-white text-sm font-semibold rounded-xl transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                  >
+                    {isCreating ? (
+                      <>
+                        <span>{t.submitting}</span>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" /> {t.confirmSubmit}
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
 
-              {step < 6 ? (
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  disabled={isUploadingEvidence}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-emerald-200 active:scale-95 disabled:opacity-50"
-                >
-                  {isUploadingEvidence ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Uploading…
-                    </>
-                  ) : (
-                    <>
-                      {step === 5 ? t.reviewApp : t.continue}{" "}
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isCreating}
-                  className="flex items-center gap-2 px-8 py-2.5 bg-emerald-950 hover:bg-black text-white text-sm font-semibold rounded-xl transition-all shadow-lg active:scale-95 disabled:opacity-50"
-                >
-                  {isCreating ? (
-                    <>
-                      <span>{t.submitting}</span>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4" /> {t.confirmSubmit}
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
-
-        <div className="mt-8 text-center flex items-center justify-center gap-2 text-slate-400">
-          <ShieldCheck className="w-4 h-4" />
-          <p className="text-xs font-medium">{t.footer}</p>
-        </div>
-      </main>
-    </div>
+          <div className="mt-8 text-center flex items-center justify-center gap-2 text-slate-400">
+            <ShieldCheck className="w-4 h-4" />
+            <p className="text-xs font-medium">{t.footer}</p>
+          </div>
+        </main>
+      </div>
     </>
   );
 }
