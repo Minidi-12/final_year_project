@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { useNavigate, Link } from "react-router";
 import { useCreateb_reqMutation, useGetAllgn_divisionsQuery } from "@/lib/api";
-import { putImage } from "@/lib/b_req";
 import ImageInput from "@/components/ImageInput";
 import { ChevronDown } from "lucide-react";
 import { getT } from "@/lib/i18n";
@@ -65,8 +64,7 @@ export default function RequestSupport() {
 
   const [step, setStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [reqEvidence, setReqEvidence] = useState([]);
-  const [isUploadingEvidence, setIsUploadingEvidence] = useState(false);
+  const [reqEvidence, setReqEvidence] = useState([]); // stores { file: File, file_name: string }
   const evidenceInputRef = useRef(null);
   const [errors, setErrors] = useState({});
 
@@ -205,10 +203,36 @@ export default function RequestSupport() {
     return d?.gn_division_Name || d?.name || "Unknown";
   };
 
+  // Helper: convert a File to a base64 data URI
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result); // result is "data:<mime>;base64,..."
+      reader.onerror = () => reject(new Error(`Could not read ${file.name}`));
+      reader.readAsDataURL(file);
+    });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // — Fix: capture the API response so we can show the reference number
+      // Convert each stored File to a base64 data URI at submit time
+      // This avoids any CORS issues with external storage uploads
+      const encodedEvidence = await Promise.all(
+        reqEvidence.map(async (item) => {
+          if (item.file instanceof File) {
+            const dataUri = await fileToBase64(item.file);
+            return {
+              fileUrl: dataUri,
+              file_name: item.file_name,
+              description: "",
+              uploaded_at: new Date().toISOString(),
+            };
+          }
+          // Already encoded (shouldn't happen, but safe fallback)
+          return item;
+        })
+      );
+
       const result = await createB_req({
         b_profile: [
           {
@@ -243,7 +267,7 @@ export default function RequestSupport() {
             selfrated_urgency: String(formData.selfrated_urgency),
           },
         ],
-        req_evidence: reqEvidence,
+        req_evidence: encodedEvidence,
         gn_division_Id: formData.gn_division,
       }).unwrap();
 
@@ -1139,7 +1163,7 @@ export default function RequestSupport() {
                           multiple
                           accept="image/*,.pdf"
                           className="hidden"
-                          onChange={async (e) => {
+                          onChange={(e) => {
                             const files = Array.from(e.target.files || []);
                             if (!files.length) return;
 
@@ -1154,109 +1178,43 @@ export default function RequestSupport() {
                               return;
                             }
 
-                            setIsUploadingEvidence(true);
-
+                            // Store raw File objects — base64 encoding happens at submit time
+                            const newItems = files.map((file) => ({
+                              file,
+                              file_name: file.name,
+                            }));
+                            setReqEvidence((prev) => [...prev, ...newItems]);
+                            // Clear validation error immediately
                             setErrors((prev) => {
                               const n = { ...prev };
                               delete n.req_evidence;
                               return n;
                             });
-                            try {
-                              const uploaded = await Promise.all(
-                                files.map(async (file) => {
-                                  try {
-                                    const url = await putImage({ file });
-                                    if (!url) {
-                                      console.warn(
-                                        `Upload failed for ${file.name}: No URL returned`,
-                                      );
-                                      return null;
-                                    }
-                                    return {
-                                      fileUrl: url,
-                                      file_name: file.name,
-                                      description: "",
-                                      uploaded_at: new Date().toISOString(),
-                                    };
-                                  } catch (fileErr) {
-                                    console.error(
-                                      `Upload failed for ${file.name}:`,
-                                      fileErr,
-                                    );
-                                    return null;
-                                  }
-                                }),
-                              );
-
-                              const validUploads = uploaded.filter(
-                                (u) => u !== null && u?.fileUrl,
-                              );
-
-                              if (validUploads.length === 0) {
-                                alert(
-                                  "Document upload failed. Please try again.",
-                                );
-                                return;
-                              }
-
-                              if (validUploads.length < files.length) {
-                                alert(
-                                  `Only ${validUploads.length} of ${files.length} file(s) uploaded successfully.`,
-                                );
-                              }
-
-                              setReqEvidence((prev) => [
-                                ...prev,
-                                ...validUploads,
-                              ]);
-                            } catch (err) {
-                              alert(
-                                "Upload failed: " +
-                                  (err?.data?.message ||
-                                    err?.message ||
-                                    "Please try again."),
-                              );
-                            } finally {
-                              setIsUploadingEvidence(false);
-                              e.target.value = "";
-                            }
+                            e.target.value = ""; // allow re-selecting same file
                           }}
                         />
 
                         <button
                           type="button"
                           onClick={() => evidenceInputRef.current?.click()}
-                          disabled={isUploadingEvidence}
                           className={`w-full flex flex-col items-center justify-center gap-2 py-8 rounded-xl border-2 border-dashed transition-all
                           ${
                             errors.req_evidence
                               ? "border-red-300 bg-red-50 hover:border-red-400"
                               : "border-slate-200 bg-white hover:border-emerald-400 hover:bg-emerald-50"
-                          }
-                          disabled:opacity-60 disabled:cursor-not-allowed`}
+                          }`}
                         >
-                          {isUploadingEvidence ? (
-                            <>
-                              <div className="w-6 h-6 border-2 border-slate-200 border-t-emerald-600 rounded-full animate-spin" />
-                              <span className="text-xs font-semibold text-slate-500">
-                                Uploading…
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
-                                <Upload className="w-5 h-5 text-slate-400" />
-                              </div>
-                              <div className="text-center">
-                                <p className="text-sm font-semibold text-slate-700">
-                                  Click to upload documents
-                                </p>
-                                <p className="text-xs text-slate-400 mt-0.5">
-                                  JPG, PNG or PDF · max 5 MB each
-                                </p>
-                              </div>
-                            </>
-                          )}
+                          <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+                            <Upload className="w-5 h-5 text-slate-400" />
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm font-semibold text-slate-700">
+                              Click to upload documents
+                            </p>
+                            <p className="text-xs text-slate-400 mt-0.5">
+                              JPG, PNG or PDF · max 5 MB each
+                            </p>
+                          </div>
                         </button>
 
                         {/* Uploaded files list */}
@@ -1401,20 +1359,10 @@ export default function RequestSupport() {
                   <button
                     type="button"
                     onClick={nextStep}
-                    disabled={isUploadingEvidence}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-emerald-200 active:scale-95 disabled:opacity-50"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-emerald-200 active:scale-95"
                   >
-                    {isUploadingEvidence ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Uploading…
-                      </>
-                    ) : (
-                      <>
-                        {step === 5 ? t.reviewApp : t.continue}{" "}
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
+                    {step === 5 ? t.reviewApp : t.continue}{" "}
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 ) : (
                   <button
