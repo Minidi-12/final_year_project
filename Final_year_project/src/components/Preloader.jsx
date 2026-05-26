@@ -10,7 +10,6 @@ export default function Preloader() {
       exit={{ opacity: 0, transition: { duration: 0.5, ease: "easeInOut" } }}
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50/30 to-white"
     >
-      {/* Floating background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
@@ -25,7 +24,6 @@ export default function Preloader() {
       </div>
 
       <div className="relative flex flex-col items-center gap-8">
-        {/* Logo with pulse animation */}
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -47,7 +45,6 @@ export default function Preloader() {
           </div>
         </motion.div>
 
-        {/* Animated loading spinner */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -63,7 +60,6 @@ export default function Preloader() {
           </motion.div>
         </motion.div>
 
-        {/* Progress bar with gradient */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -82,7 +78,6 @@ export default function Preloader() {
           />
         </motion.div>
 
-        {/* Loading text with fade animation */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

@@ -834,11 +834,11 @@ function QueueView({
         return matchSearch && matchStatus && matchUrgency && matchDivision;
       })
       .sort((a, b) => {
-        const aIsProcessed = a.status === "verified" || a.status === "rejected";
-        const bIsProcessed = b.status === "verified" || b.status === "rejected";
+        const aIsCompleted = a.status === "resolved" || a.status === "rejected";
+        const bIsCompleted = b.status === "resolved" || b.status === "rejected";
 
-        if (aIsProcessed && !bIsProcessed) return 1;
-        if (!aIsProcessed && bIsProcessed) return -1;
+        if (aIsCompleted && !bIsCompleted) return 1;
+        if (!aIsCompleted && bIsCompleted) return -1;
 
         return sortBy === "score"
           ? (b.urgency_score ?? 0) - (a.urgency_score ?? 0)

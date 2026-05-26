@@ -84,8 +84,6 @@ export const CATEGORY_IMAGES = {
   other:                 "https://images.unsplash.com/photo-1560252829-804f1aedf1be?q=80&w=800&auto=format&fit=crop",
 };
 
-// ACTIVITIES removed — now fetched live from /api/news_posts
-// filtered by post_type === "activity" in Activities_page.jsx
 
 export const REPORTS = [
   {

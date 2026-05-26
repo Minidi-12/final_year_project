@@ -1,103 +1,296 @@
 import { useNavigate } from "react-router";
-// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-import { Home, ArrowLeft, Search, Heart } from "lucide-react";
+import { Home, ArrowLeft, Heart, Compass } from "lucide-react";
 import { Link } from "react-router";
+import { useEffect } from "react";
 
-// Quick-links shown below the main card — helps users find where they meant to go
-const QUICK_LINKS = [
-  { label: "Projects",           to: "/projects"            },
-  { label: "Request Support",    to: "/request"             },
-  { label: "Volunteer",          to: "/volunteer"           },
-  { label: "Donate",             to: "/donate"              },
-  { label: "Contact Us",         to: "/contact-us"          },
+const PARTICLES = [
+  { id: 0, x: 12, y: 18, size: 5, dur: 4.2, delay: 0 },
+  { id: 1, x: 22, y: 68, size: 3, dur: 5.5, delay: 0.8 },
+  { id: 2, x: 78, y: 22, size: 4, dur: 3.8, delay: 1.4 },
+  { id: 3, x: 88, y: 72, size: 6, dur: 4.8, delay: 0.3 },
+  { id: 4, x: 55, y: 85, size: 3, dur: 5.0, delay: 1.1 },
+  { id: 5, x: 68, y: 12, size: 4, dur: 4.5, delay: 0.6 },
+];
+
+const CARDINALS = [
+  { angle: 0,   label: "N", top: "3%",  left: "50%",  dx: "-50%", dy: "0%" },
+  { angle: 180, label: "S", top: "94%", left: "50%",  dx: "-50%", dy: "0%" },
+  { angle: 90,  label: "E", top: "50%", left: "96%",  dx: "-100%", dy: "-50%" },
+  { angle: 270, label: "W", top: "50%", left: "4%",   dx: "0%",   dy: "-50%" },
 ];
 
 export default function NotFound() {
   const navigate = useNavigate();
 
-  return (
-    <div className="min-h-screen bg-[#FDFCFB] flex flex-col items-center justify-center p-6">
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,400&family=DM+Sans:wght@400;450;500;600&display=swap";
+    link.rel = "stylesheet";
+    document.head.appendChild(link);
+    return () => document.head.removeChild(link);
+  }, []);
 
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-md w-full text-center"
+  return (
+    <div
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+      className="min-h-screen bg-[#F5F4EE] relative overflow-hidden flex flex-col"
+    >
+      <svg
+        className="fixed inset-0 w-full h-full pointer-events-none z-50 opacity-[0.04]"
+        style={{ mixBlendMode: "multiply" }}
+        aria-hidden="true"
       >
-        {/* Logo mark */}
-        <Link to="/" className="inline-flex items-center gap-2 mb-12 group">
-          <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center group-hover:bg-emerald-700 transition-colors">
-            <Heart className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-base font-bold text-emerald-950">
-            HOPE<span className="text-emerald-600">CONNECT</span>
+        <filter id="grain">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.68"
+            numOctaves="3"
+            stitchTiles="stitch"
+          />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#grain)" />
+      </svg>
+
+      <div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+        aria-hidden="true"
+      >
+        <span
+          style={{ fontFamily: "'Fraunces', serif" }}
+          className="text-[38vw] font-black leading-none tracking-tighter text-emerald-900/[0.03]"
+        >
+          404
+        </span>
+      </div>
+
+      <div
+        className="absolute top-[-12%] right-[-6%] w-[52vw] h-[52vw] max-w-[680px] max-h-[680px] pointer-events-none"
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 600 600" className="w-full h-full opacity-[0.06]">
+          <path
+            fill="#064E3B"
+            d="M300,70 C440,50 560,130 570,270 C580,410 490,510 350,530
+               C210,550 80,460 70,320 C60,180 140,95 300,70 Z"
+          />
+        </svg>
+      </div>
+
+      <div
+        className="absolute bottom-[-18%] left-[-10%] w-[42vw] h-[42vw] max-w-[520px] max-h-[520px] pointer-events-none"
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 500 500" className="w-full h-full opacity-[0.05]">
+          <path
+            fill="#065F46"
+            d="M250,40 C390,20 470,120 465,265 C460,410 365,475 220,470
+               C75,465 20,360 30,210 C40,60 110,60 250,40 Z"
+          />
+        </svg>
+      </div>
+
+      {PARTICLES.map((p) => (
+        <motion.div
+          key={p.id}
+          aria-hidden="true"
+          className="absolute rounded-full bg-emerald-600/20"
+          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size }}
+          animate={{ y: [0, -14, 0], opacity: [0.15, 0.55, 0.15] }}
+          transition={{ duration: p.dur, repeat: Infinity, delay: p.delay, ease: "easeInOut" }}
+        />
+      ))}
+
+      <header className="relative z-10 px-8 pt-8 md:px-14 md:pt-10">
+        <Link to="/" className="inline-flex items-center gap-2.5 group">
+          <motion.div
+            whileHover={{ rotate: 6, scale: 1.08 }}
+            transition={{ type: "spring", stiffness: 400 }}
+            className="w-9 h-9 bg-emerald-700 rounded-[10px] flex items-center justify-center shadow-lg shadow-emerald-900/25"
+          >
+            <Heart className="w-4 h-4 text-white fill-white" />
+          </motion.div>
+          <span className="text-[12px] font-semibold tracking-[0.18em] uppercase text-emerald-950">
+            Hope<span className="text-emerald-600">Connect</span>
           </span>
         </Link>
+      </header>
 
-        {/* Main card */}
-        <div className="bg-white rounded-[3rem] p-14 shadow-[0_32px_64px_-16px_rgba(6,78,59,0.08)] border border-emerald-50">
+      <main className="relative z-10 flex-1 flex items-center px-8 md:px-14 lg:px-24 pb-10 mt-2">
 
-          {/* 404 icon */}
-          <div className="w-24 h-24 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-emerald-100 relative">
-            <Search className="w-10 h-10 text-emerald-400" />
-            {/* Small "!" badge */}
-            <div className="absolute -top-2 -right-2 w-7 h-7 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
-              <span className="text-[11px] font-black text-white">!</span>
-            </div>
+        <div className="max-w-[520px] w-full">
+
+          <motion.div
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.05 }}
+            className="flex items-center gap-3 mb-7"
+          >
+            <div className="h-px w-7 bg-emerald-500/50" />
+            <span className="text-[10px] font-semibold tracking-[0.35em] uppercase text-emerald-600/80">
+              Error 404
+            </span>
+          </motion.div>
+
+          <div className="overflow-hidden mb-2">
+            <motion.h1
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.75, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              style={{ fontFamily: "'Fraunces', serif" }}
+              className="text-[clamp(2.6rem,6vw,4.4rem)] font-black text-emerald-950 leading-[1.0] tracking-tight"
+            >
+              You've wandered
+            </motion.h1>
           </div>
 
-          {/* Error code */}
-          <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.4em] mb-3">
-            Error 404
+          <div className="overflow-hidden mb-7">
+            <motion.h1
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.75, delay: 0.27, ease: [0.22, 1, 0.36, 1] }}
+              style={{ fontFamily: "'Fraunces', serif" }}
+              className="text-[clamp(2.6rem,6vw,4.4rem)] font-light italic text-emerald-600 leading-[1.0] tracking-tight"
+            >
+              off the path.
+            </motion.h1>
           </div>
 
-          <h1 className="text-2xl font-bold text-emerald-950 mb-3 tracking-tight">
-            Page Not Found
-          </h1>
-          <p className="text-sm text-gray-400 font-medium mb-10 leading-relaxed">
-            The page you're looking for doesn't exist or may have been moved.
-            <br />
-            Check the URL or head back to a known page.
-          </p>
+          {/* Body copy */}
+          <motion.p
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.42 }}
+            className="text-[15px] text-stone-500 leading-[1.8] mb-10 max-w-[360px] font-[450]"
+          >
+            This page has moved, been removed, or simply never existed.
+            Let's get you back somewhere meaningful.
+          </motion.p>
 
-          {/* Primary actions */}
-          <div className="flex flex-col gap-3">
-            <button
+          {/* Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.56 }}
+            className="flex flex-wrap gap-3"
+          >
+            <motion.button
+              whileHover={{ y: -2, scale: 1.015 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
               onClick={() => navigate("/")}
-              className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-600/20 active:scale-95"
+              className="inline-flex items-center gap-2.5 bg-emerald-700 hover:bg-emerald-800 text-white
+                         px-7 py-[14px] rounded-[14px] text-[13px] font-semibold tracking-wide
+                         transition-colors shadow-xl shadow-emerald-900/20"
             >
-              <Home className="w-4 h-4" />
+              <Home className="w-[15px] h-[15px]" strokeWidth={2.2} />
               Back to Home
-            </button>
-            <button
+            </motion.button>
+
+            <motion.button
+              whileHover={{ y: -2, scale: 1.015 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
               onClick={() => navigate(-1)}
-              className="w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-500 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all border border-gray-100"
+              className="inline-flex items-center gap-2.5 bg-white/80 hover:bg-white text-stone-600
+                         px-7 py-[14px] rounded-[14px] text-[13px] font-semibold tracking-wide
+                         transition-all border border-stone-200/80 shadow-sm backdrop-blur-sm"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-[15px] h-[15px]" strokeWidth={2.2} />
               Go Back
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         </div>
 
-        {/* Quick links */}
-        <div className="mt-10">
-          <p className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.3em] mb-5">
-            Or jump to
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {QUICK_LINKS.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="px-4 py-2 bg-white rounded-xl border border-gray-100 text-xs font-bold text-gray-400 hover:text-emerald-600 hover:border-emerald-200 transition-all uppercase tracking-widest"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.88, rotate: -8 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ duration: 1.1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="hidden lg:flex flex-1 items-center justify-center"
+          aria-hidden="true"
+        >
+          <div className="relative w-[280px] h-[280px]">
+
+            <div className="absolute inset-0 rounded-full border border-dashed border-emerald-400/25" />
+            <div className="absolute inset-[22px] rounded-full border border-emerald-300/20" />
+            <div
+              className="absolute inset-[52px] rounded-full flex items-center justify-center
+                         bg-white/60 border border-white/80 backdrop-blur-md
+                         shadow-[0_24px_48px_-8px_rgba(6,78,59,0.14)]"
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
               >
-                {link.label}
-              </Link>
+                <Compass
+                  className="w-[52px] h-[52px] text-emerald-600/60"
+                  strokeWidth={1}
+                />
+              </motion.div>
+            </div>
+
+            {[0, 90, 180, 270].map((angle) => (
+              <div
+                key={angle}
+                className="absolute w-2 h-2 bg-emerald-500/35 rounded-full"
+                style={{
+                  top: `${50 - 48 * Math.cos((angle * Math.PI) / 180)}%`,
+                  left: `${50 + 48 * Math.sin((angle * Math.PI) / 180)}%`,
+                  transform: "translate(-50%, -50%)",
+                }}
+              />
             ))}
+
+            {CARDINALS.map(({ label, top, left, dx, dy }) => (
+              <span
+                key={label}
+                className="absolute text-[9px] font-bold tracking-[0.2em] text-emerald-800/40"
+                style={{ top, left, transform: `translate(${dx}, ${dy})` }}
+              >
+                {label}
+              </span>
+            ))}
+
+            {Array.from({ length: 12 }, (_, i) => {
+              const rad = (i * 30 * Math.PI) / 180;
+              const r = 130;
+              const x = 140 + r * Math.sin(rad);
+              const y = 140 - r * Math.cos(rad);
+              return (
+                <div
+                  key={i}
+                  className="absolute w-px bg-emerald-500/20"
+                  style={{
+                    height: i % 3 === 0 ? 10 : 5,
+                    left: x,
+                    top: y,
+                    transform: `translate(-50%, -50%) rotate(${i * 30}deg)`,
+                  }}
+                />
+              );
+            })}
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </main>
+
+      <motion.footer
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 1 }}
+        className="relative z-10 px-8 pb-8 md:px-14 lg:px-24"
+      >
+        <p className="text-[11px] text-stone-400 tracking-wide font-[450]">
+          Think something's wrong?{" "}
+          <Link
+            to="/contact"
+            className="text-emerald-600 hover:text-emerald-700 underline underline-offset-2 transition-colors"
+          >
+            Contact support
+          </Link>
+        </p>
+      </motion.footer>
     </div>
   );
 }
