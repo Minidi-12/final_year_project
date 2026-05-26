@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
@@ -70,6 +70,7 @@ export default function RequestSupport() {
   const [isSuccess,  setIsSuccess]  = useState(false);
   const [reqEvidence, setReqEvidence] = useState([]);
   const [isUploadingEvidence, setIsUploadingEvidence] = useState(false);
+  const evidenceInputRef = useRef(null);
   const [errors,     setErrors]     = useState({});
 
   // — Fix: store the reference number returned by the API after submission
@@ -1092,81 +1093,116 @@ export default function RequestSupport() {
                         </span>
                         <span className="text-red-400 text-xs font-semibold">*</span>
                       </div>
-                      <ImageInput
-                        onChange={async (files) => {
-                          const list = Array.isArray(files) ? files : [files];
-                          const rawFiles = list.filter(Boolean);
-                          if (!rawFiles.length) {
-                            setReqEvidence([]);
+
+                     
+                      <input
+                        ref={evidenceInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*,.pdf"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const files = Array.from(e.target.files || []);
+                          if (!files.length) return;
+
+                          
+                          const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
+                          if (oversized) {
+                            alert(`"${oversized.name}" exceeds 5 MB. Please choose a smaller file.`);
+                            e.target.value = "";
                             return;
                           }
+
                           setIsUploadingEvidence(true);
+                         
+                          setErrors((prev) => { const n = { ...prev }; delete n.req_evidence; return n; });
                           try {
                             const uploaded = await Promise.all(
-                              rawFiles.map(async (f) => {
-                                
-                                if (f instanceof File || f instanceof Blob) {
-                                  const url = await putImage({ file: f });
-                                  return {
-                                    fileUrl: url,
-                                    file_name: f.name || "upload",
-                                    description: "",
-                                    uploaded_at: new Date().toISOString(),
-                                  };
-                                }
-                              
-                                if (typeof f === "string") {
-                                  return {
-                                    fileUrl: f,
-                                    file_name: f.split("/").pop() || "upload",
-                                    description: "",
-                                    uploaded_at: new Date().toISOString(),
-                                  };
-                                }
-                               
-                                const fileObj = f.file || f.raw || f;
-                                if (fileObj instanceof File || fileObj instanceof Blob) {
-                                  const url = await putImage({ file: fileObj });
-                                  return {
-                                    fileUrl: url,
-                                    file_name: fileObj.name || f.name || "upload",
-                                    description: "",
-                                    uploaded_at: new Date().toISOString(),
-                                  };
-                                }
-                              
+                              files.map(async (file) => {
+                                const url = await putImage({ file });
                                 return {
-                                  fileUrl: f.url || f.fileUrl || f.file_url || f.preview || "",
-                                  file_name: f.name || f.fileName || f.file_name || "upload",
+                                  fileUrl: url,
+                                  file_name: file.name,
                                   description: "",
                                   uploaded_at: new Date().toISOString(),
                                 };
                               })
                             );
-                            setReqEvidence(uploaded.filter((u) => u.fileUrl));
+                            setReqEvidence((prev) => [...prev, ...uploaded.filter((u) => u.fileUrl)]);
                           } catch (err) {
-                            alert("File upload failed: " + (err.message || "Please try again."));
-                            setReqEvidence([]);
+                            alert("Upload failed: " + (err?.data?.message || err?.message || "Please try again."));
                           } finally {
                             setIsUploadingEvidence(false);
+                            e.target.value = ""; 
                           }
                         }}
-                        multiple
-                        accept="image/*,.pdf"
-                        maxSizeMB={5}
-                        className="w-full"
                       />
-                      {isUploadingEvidence && (
-                        <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-slate-500">
-                          <div className="w-3 h-3 border-2 border-slate-300 border-t-emerald-600 rounded-full animate-spin" />
-                          Uploading documents…
+
+                    
+                      <button
+                        type="button"
+                        onClick={() => evidenceInputRef.current?.click()}
+                        disabled={isUploadingEvidence}
+                        className={`w-full flex flex-col items-center justify-center gap-2 py-8 rounded-xl border-2 border-dashed transition-all
+                          ${errors.req_evidence
+                            ? "border-red-300 bg-red-50 hover:border-red-400"
+                            : "border-slate-200 bg-white hover:border-emerald-400 hover:bg-emerald-50"
+                          }
+                          disabled:opacity-60 disabled:cursor-not-allowed`}
+                      >
+                        {isUploadingEvidence ? (
+                          <>
+                            <div className="w-6 h-6 border-2 border-slate-200 border-t-emerald-600 rounded-full animate-spin" />
+                            <span className="text-xs font-semibold text-slate-500">Uploading…</span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+                              <Upload className="w-5 h-5 text-slate-400" />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-sm font-semibold text-slate-700">
+                                Click to upload documents
+                              </p>
+                              <p className="text-xs text-slate-400 mt-0.5">
+                                JPG, PNG or PDF · max 5 MB each
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </button>
+
+                      {/* Uploaded files list */}
+                      {reqEvidence.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          {reqEvidence.map((doc, i) => (
+                            <div
+                              key={i}
+                              className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl"
+                            >
+                              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
+                                <FileText className="w-4 h-4 text-emerald-600" />
+                              </div>
+                              <p className="text-xs font-semibold text-emerald-800 flex-1 truncate">
+                                {doc.file_name}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setReqEvidence((prev) => prev.filter((_, j) => j !== i))
+                                }
+                                className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-red-100 text-slate-400 hover:text-red-600 transition-colors shrink-0"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                          <p className="text-[11px] font-semibold text-emerald-600 pl-1">
+                            ✓ {reqEvidence.length} document{reqEvidence.length > 1 ? "s" : ""} ready
+                          </p>
                         </div>
                       )}
-                      {!isUploadingEvidence && reqEvidence.length > 0 && (
-                        <p className="mt-2 text-[11px] font-semibold text-emerald-600">
-                          ✓ {reqEvidence.length} document{reqEvidence.length > 1 ? "s" : ""} uploaded successfully
-                        </p>
-                      )}
+
                       {errors.req_evidence && (
                         <p className="mt-2 text-[11px] font-semibold text-red-500 flex items-center gap-1">
                           <span>⚠</span> {errors.req_evidence}
