@@ -126,7 +126,7 @@ export const translations = {
       education:     "Highest Education Level",
       edu: {
         none:   "No Formal Education",
-        grade:  "Grade 1 – 10",
+        grade:  "Grade 1 - 10",
         olevel: "O/Level",
         alevel: "A/Level",
         degree: "Degree",
